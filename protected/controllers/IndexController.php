@@ -446,7 +446,7 @@ class IndexController extends BaseController
 	public function getRedis()
 	{
 		if ( empty( $this->_redis ) )
-			$this->_redis = new CRedis();
+			$this->_redis = new CRedisFile();
 
 		return $this->_redis;
 	}

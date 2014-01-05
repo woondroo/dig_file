@@ -7,8 +7,6 @@
  */
 class UpgradeController extends BaseController
 {
-	private $_redis;
-
 	/**
 	 * init
 	 */
@@ -145,17 +143,6 @@ class UpgradeController extends BaseController
 		header('Content-Type: text/html; charset=utf-8');
 		echo $this->encodeAjaxData( $isok , $data , $msg );
 		exit();
-	}
-
-	/**
-	 * get redis connection
-	 */
-	public function getRedis()
-	{
-		if ( empty( $this->_redis ) )
-			$this->_redis = new CRedis();
-
-		return $this->_redis;
 	}
 
 //end class

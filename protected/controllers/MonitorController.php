@@ -7,8 +7,6 @@
  */
 class MonitorController extends BaseController
 {
-	private $_redis;
-
 	/**
 	 * init
 	 */
@@ -26,17 +24,6 @@ class MonitorController extends BaseController
 
 		$aryData = array();
 		$this->render( 'index' , $aryData );
-	}
-
-	/**
-	 * get redis connection
-	 */
-	public function getRedis()
-	{
-		if ( empty( $this->_redis ) )
-			$this->_redis = new CRedis();
-
-		return $this->_redis;
 	}
 
 //end class

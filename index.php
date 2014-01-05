@@ -9,8 +9,8 @@ if( !file_exists( dirname(__FILE__).'/protected/config/define.php' ) )
 require_once( dirname(__FILE__).'/protected/config/define.php' );
 
 // store session to redis
-ini_set("session.save_handler","redis");
-ini_set("session.save_path","tcp://".REDIS_CONNECT_ADD.":".REDIS_CONNECT_PORT);
+//ini_set("session.save_handler","redis");
+//ini_set("session.save_path","tcp://".REDIS_CONNECT_ADD.":".REDIS_CONNECT_PORT);
 
 // change the following paths if necessary
 $nbt=dirname(__FILE__).'/protected/framework/Nbt.php';

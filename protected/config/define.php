@@ -12,7 +12,7 @@ define( 'MAIN_DOMAIN' , 'http://dig.eiodesign.com' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 
 //是否开启地址重写
-define( 'REWRITE_MODE' , true );
+define( 'REWRITE_MODE' , false );
 //开始运行时间(秒)
 define( 'NBT_BEGIN_TIME' , time() );
 //开始运行时间(微秒)
