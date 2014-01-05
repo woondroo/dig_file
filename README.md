@@ -1,4 +1,6 @@
-dig_file
-========
+Dig Program
+===
 
-Dig BTC&amp;LTC coin program for local file
+Dig BTC&amp;LTC coin program
+
+More message coming soon!
