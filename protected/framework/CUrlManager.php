@@ -85,8 +85,8 @@ class CUrlManager extends CApplicationComponents
 		// 如果允许缓存解析器，则从缓存中获得解析器缓存集合
 		if ( $this->cacheRules === true )
 		{
-			$cacheObj = new CRedis();
-			$data = $cacheObj->readByKey( self::CACHE_KEY );
+			//$cacheObj = new CRedis();
+			//$data = $cacheObj->readByKey( self::CACHE_KEY );
 		}
 		
 		// 如果缓存数据不为空，则直接使用缓存
