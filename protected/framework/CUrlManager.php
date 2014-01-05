@@ -45,7 +45,7 @@ class CUrlManager extends CApplicationComponents
 	/**
 	 * 是否需要缓存规则集，默认为 true，会进行缓存，但规则改变需要手动清除缓存
 	 */
-	public $cacheRules=true;
+	public $cacheRules=false;
 	/**
 	 * 是否启用严格 URL 跳转，如果参数不能正常匹配，则返回 404 错误
 	 */
