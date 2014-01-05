@@ -7,12 +7,12 @@ class UtilMsg
 	 *
 	 * @param string $_strMsg
 	 */
-	public function saveTipToSession( $_strMsg )
+	public static function saveTipToSession( $_strMsg )
 	{
 		Nbt::app()->session->set( '_atip' , $_strMsg );
 	}
 	
-	public function getTipFromSession()
+	public static function getTipFromSession()
 	{
 		//删除并返当获取到的session值
 		return Nbt::app()->session->remove( '_atip' );
@@ -23,7 +23,7 @@ class UtilMsg
 	 *
 	 * @param string $_strMsg
 	 */
-	public function saveErrorTipToSession( $_strMsg )
+	public static function saveErrorTipToSession( $_strMsg )
 	{
 		Nbt::app()->session->set( '_atip_error' , $_strMsg );
 	}
@@ -33,7 +33,7 @@ class UtilMsg
 	 *
 	 * @return string $_strMsg
 	 */
-	public function getErrorTipFromSession()
+	public static function getErrorTipFromSession()
 	{
 		//删除并返当获取到的session值
 		return Nbt::app()->session->remove( '_atip_error' );
