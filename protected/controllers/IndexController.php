@@ -197,9 +197,9 @@ class IndexController extends BaseController
 			return false;
 
 		if ( $startModel == 'btc' )
-			$command = "sudo nohup /home/wwwroot/dig/soft/cgminer -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} -S {$startUsb} >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND."nohup /home/wwwroot/dig/soft/cgminer -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} -S {$startUsb} >/dev/null 2>&1 &";
 		else if ( $startModel == 'ltc' )
-			$command = "sudo nohup /home/wwwroot/dig/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '900')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} -2 >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND."nohup /home/wwwroot/dig/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '900')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} -2 >/dev/null 2>&1 &";
 
 		exec( $command );
 		return true;
@@ -210,7 +210,7 @@ class IndexController extends BaseController
 	 */
 	public function actionShutdown( $_boolIsNoExist = false , $_strSingleShutDown = '' )
 	{
-		exec( 'sudo ps x|grep miner' , $output );
+		exec( SUDO_COMMAND.'ps x|grep miner' , $output );
 
 		$pids = array();
 		$inglePids = array();
@@ -228,9 +228,9 @@ class IndexController extends BaseController
 		}
 
 		if ( !empty( $_strSingleShutDown ) )
-			exec( 'sudo kill -9 '.implode( ' ' , $inglePids ) );
+			exec( SUDO_COMMAND.'kill -9 '.implode( ' ' , $inglePids ) );
 		else if ( !empty( $pids ) )
-			exec( 'sudo kill -9 '.implode( ' ' , $pids ) );
+			exec( SUDO_COMMAND.'kill -9 '.implode( ' ' , $pids ) );
 		
 		if ( $_boolIsNoExist === false )
 		{
@@ -244,7 +244,7 @@ class IndexController extends BaseController
 	 */
 	public function actionCheck( $_boolIsNoExist = false )
 	{
-		exec( 'sudo ps x|grep miner' , $output );
+		exec( SUDO_COMMAND.'ps x|grep miner' , $output );
 
 		$alived = array();
 		$died = array();
@@ -335,7 +335,7 @@ class IndexController extends BaseController
 		if ( !empty( $usbVal ) )
 			$usbData = json_decode( $usbVal , true );
 
-		exec( 'sudo ls /dev/*USB*' , $output );
+		exec( SUDO_COMMAND.'ls /dev/*USB*' , $output );
 
 		$waitSetUsb = array();
 		foreach ( $usbData as $uk=>$u )

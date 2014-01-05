@@ -7,6 +7,9 @@
 //网站根路径
 define('WEB_ROOT',dirname(dirname(dirname(__FILE__))));
 
+//是否需要 sudo 命令
+define( 'SUDO_COMMAND' , '' );
+
 //主域名设置
 define( 'MAIN_DOMAIN' , 'http://dig.eiodesign.com' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
