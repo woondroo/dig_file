@@ -197,7 +197,7 @@ class IndexController extends BaseController
 		if ( $startModel == 'btc' )
 			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/cgminer -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} -S {$startUsb} >/dev/null 2>&1 &";
 		else if ( $startModel == 'ltc' )
-			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '700')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} -2 >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '700')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} >/dev/null 2>&1 &";
 
 		exec( $command );
 		return true;
