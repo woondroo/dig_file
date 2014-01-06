@@ -18,7 +18,7 @@ define('DB_WEB_PASSWORD','wengebin729x');
 define('DB_WEB_CHARGSET','utf8');
 
 //是否开启地址重写
-define( 'REWRITE_MODE' , true );
+define( 'REWRITE_MODE' , false );
 //开始运行时间(秒)
 define( 'NBT_BEGIN_TIME' , time() );
 //开始运行时间(微秒)
