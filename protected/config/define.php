@@ -7,15 +7,18 @@
 //网站根路径
 define('WEB_ROOT',dirname(dirname(dirname(__FILE__))));
 
-//是否需要 sudo 命令
-define( 'SUDO_COMMAND' , '' );
-
 //主域名设置
 define( 'MAIN_DOMAIN' , 'http://dig.eiodesign.com' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 
+//WEB数据库配置
+define('DB_WEB_DSN','mysql:host=localhost;dbname=www_wiibox');
+define('DB_WEB_USERNAME','root');
+define('DB_WEB_PASSWORD','wengebin729x');
+define('DB_WEB_CHARGSET','utf8');
+
 //是否开启地址重写
-define( 'REWRITE_MODE' , false );
+define( 'REWRITE_MODE' , true );
 //开始运行时间(秒)
 define( 'NBT_BEGIN_TIME' , time() );
 //开始运行时间(微秒)
@@ -33,4 +36,4 @@ define( 'REDIS_DISTRICT_NAME' , 'www' );
 define( 'CACHE_STATUS' , true );
 
 //当前版本号
-define( 'CUR_VERSION' , '4.0' );
+define( 'CUR_VERSION' , '4.1' );

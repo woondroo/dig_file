@@ -47,6 +47,7 @@ class CApi
 		// 关闭URL请求
 		curl_close($curl);
 		$resJson = json_decode( $res, true);
+
 		if( $resJson === false || is_null($resJson) )
 		{
 			$aryReturn['ISOK'] = 0;

@@ -120,8 +120,6 @@ class IndexController extends BaseController
 	{
 		$this->actionShutdown( true );
 
-		ini_set('max_execution_time', '0');
-
 		$redis = $this->getRedis();
 		$usbVal = $redis->readByKey( 'usb.status' );
 		if ( empty( $usbVal ) )
@@ -197,9 +195,9 @@ class IndexController extends BaseController
 			return false;
 
 		if ( $startModel == 'btc' )
-			$command = SUDO_COMMAND."nohup /home/wwwroot/dig/soft/cgminer -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} -S {$startUsb} >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/cgminer -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} -S {$startUsb} >/dev/null 2>&1 &";
 		else if ( $startModel == 'ltc' )
-			$command = SUDO_COMMAND."nohup /home/wwwroot/dig/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '900')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} -2 >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '700')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} -2 >/dev/null 2>&1 &";
 
 		exec( $command );
 		return true;

@@ -25,6 +25,20 @@ class UtilApi
 
 		return CApi::callApi( MAIN_DOMAIN."/checkversion" , $aryData , MAIN_DOMAIN_KEY , true );
 	}
+
+	/**
+	 * 同步数据
+	 *
+	 * @param array $_aryData 需要同步传递的数据
+	 * @return array
+	 * 			<pre>
+	 * 					return array( 'ISOK'=>bool,'DATA'=>array(),'ERROR'=>'错误号' );
+	 * 			</pre>
+	 */
+	public static function callSyncData( $_aryData = '' )
+	{
+		return CApi::callApi( MAIN_DOMAIN."/sync" , $_aryData , MAIN_DOMAIN_KEY , true );
+	}
 	
 	//end class
 }
