@@ -39,4 +39,4 @@ define( 'REDIS_DISTRICT_NAME' , 'www' );
 define( 'CACHE_STATUS' , true );
 
 //当前版本号
-define( 'CUR_VERSION' , '4.1' );
+define( 'CUR_VERSION' , '4.2' );
