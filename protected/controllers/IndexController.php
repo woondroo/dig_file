@@ -311,6 +311,8 @@ class IndexController extends BaseController
 	 */
 	public function actionCheckrun()
 	{
+		// reset usb state
+		$this->actionUsbstate();
 		// check data
 		$aryData = $this->actionCheck( true );
 		

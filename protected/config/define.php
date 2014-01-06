@@ -8,7 +8,7 @@
 define('WEB_ROOT',dirname(dirname(dirname(__FILE__))));
 
 //主域名设置
-define( 'MAIN_DOMAIN' , 'http://dig.eiodesign.com' );
+define( 'MAIN_DOMAIN' , 'http://box.eiodesign.com' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 
 //WEB数据库配置
