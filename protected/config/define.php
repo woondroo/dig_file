@@ -11,6 +11,9 @@ define('WEB_ROOT',dirname(dirname(dirname(__FILE__))));
 define( 'MAIN_DOMAIN' , 'http://box.eiodesign.com' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 
+//sudo command
+define( 'SUDO_COMMAND' , 'sudo ' );
+
 //WEB数据库配置
 define('DB_WEB_DSN','mysql:host=localhost;dbname=www_wiibox');
 define('DB_WEB_USERNAME','root');

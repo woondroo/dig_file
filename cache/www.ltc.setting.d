@@ -1,1 +1,1 @@
-{"ad":"stratum+tcp:\/\/pool1.us.multipool.us:7777","ac":"diginforce.2","pw":"123456","su":1}
+{"ad":"stratum+tcp:\/\/us-east.multipool.us:7777","ac":"diginforce.2","pw":"123456","su":1}
