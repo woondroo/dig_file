@@ -132,7 +132,7 @@ class IndexController extends BaseController
 		}
 
 		$usbData = json_decode( $usbVal , true );
-		if ( empty( $usbData['BTC'] ) )
+		if ( empty( $usbData ) )
 		{
 			if ( $_boolIsNoExist === false )
 			{
@@ -140,16 +140,32 @@ class IndexController extends BaseController
 			}
 			else return true;
 		}
-
-		// if btc machine has restart
-		if ( count( $usbData['BTC'] ) > 0 )
+		
+		$aryBTCUsb = array();
+		$aryLTCUsb = array();
+		foreach ( $usbData as $usb=>$model )
 		{
-			$this->restartByUsb( $usbData['BTC'] , 'btc' );
-			sleep( 3 );
+			if ( in_array( $model , array( 'btc' , 'ltc' ) ) )
+			{
+				if ( $model == 'btc' )
+					$aryBTCUsb[$usb] = $model;
+				else if ( $model == 'ltc' )
+					$aryLTCUsb[$usb] = $model;
+			}
 		}
 
-		if ( count( $usbData['LTC'] ) > 0 )
-			$this->restartByUsb( $usbData['LTC'] , 'ltc' );
+		foreach ( $aryBTCUsb as $usb=>$model )
+		{
+			$this->restartByUsb( $usb , $model );
+		}
+
+		// if btc machine has restart
+		if ( count( $aryBTCUsb ) > 0 ) sleep( 3 );
+
+		foreach ( $aryLTCUsb as $usb=>$model )
+		{
+			$this->restartByUsb( $usb , $model );
+		}
 
 		if ( $_boolIsNoExist === false )
 		{
@@ -161,16 +177,17 @@ class IndexController extends BaseController
 	/**
 	 * restart program by usb
 	 */
-	public function restartByUsb( $_aryUsb = '' , $_strUsbModel = '' , $_strSingleShutDown = '' )
+	public function restartByUsb( $_strUsb = '' , $_strUsbModel = '' , $_strSingleShutDown = '' )
 	{
-		if ( empty( $_aryUsb ) || !is_array( $_aryUsb ) || empty( $_strUsbModel ) )
+		if ( !empty( $_strSingleShutDown ) )
+			$this->actionShutdown( true , $_strSingleShutDown );
+
+		if ( empty( $_strUsb ) || empty( $_strUsbModel ) )
 			return false;
 
+		$startUsb = $_strUsb;
 		$startModel = $_strUsbModel;
-		$startUsb = '-S '.implode( ' -S ' , $_aryUsb );
-		if ( $startModel == 'ltc' )
-			$startUsb = $_aryUsb[0];
-
+	
 		$redis = $this->getRedis();
 		$setVal = $redis->readByKey( "{$startModel}.setting" );
 		$aryData = empty( $setVal ) ? array() : json_decode( $setVal , true );
@@ -178,9 +195,9 @@ class IndexController extends BaseController
 			return false;
 
 		if ( $startModel == 'btc' )
-			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/cgminer --icarus-options=115200:2:".($aryData['su'] == 0 ? '600' : '700')." -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/cgminer -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} -S {$startUsb} >/dev/null 2>&1 &";
 		else if ( $startModel == 'ltc' )
-			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '700')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} --dual -t ".count( $_aryUsb )." >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND."nohup ".WEB_ROOT."/soft/minerd --freq=".($aryData['su'] == 0 ? '600' : '700')." --gc3355={$startUsb} --url={$aryData['ad']} --userpass={$aryData['ac']}:{$aryData['pw']} >/dev/null 2>&1 &";
 
 		exec( $command );
 		return true;
@@ -199,9 +216,19 @@ class IndexController extends BaseController
 		{
 			preg_match( '/\s*(\d+)\s*.*/' , $r , $match );
 			if ( !empty( $match[1] ) ) $pids[] = $match[1];
+			
+			if ( !empty( $_strSingleShutDown ) )
+			{
+				preg_match( '/.*-S\s(.+).*/' , $r , $match_usb_btc );
+				preg_match( '/.*--gc3355=(.+)\s--url=.*/' , $r , $match_usb_ltc );
+				if ( in_array( $_strSingleShutDown , array( $match_usb_btc[1] , $match_usb_ltc[1] ) ) ) $inglePids[] = $match[1];
+			}
 		}
 
-		exec( SUDO_COMMAND.'kill -QUIT '.implode( ' ' , $pids ) );
+		if ( !empty( $_strSingleShutDown ) )
+			exec( SUDO_COMMAND.'kill -9 '.implode( ' ' , $inglePids ) );
+		else if ( !empty( $pids ) )
+			exec( SUDO_COMMAND.'kill -9 '.implode( ' ' , $pids ) );
 		
 		if ( $_boolIsNoExist === false )
 		{
@@ -217,8 +244,8 @@ class IndexController extends BaseController
 	{
 		exec( SUDO_COMMAND.'ps x|grep miner' , $output );
 
-		$alived = array('BTC'=>array(),'LTC'=>array());
-		$died = array('BTC'=>array(),'LTC'=>array());
+		$alived = array();
+		$died = array();
 
 		$redis = $this->getRedis();
 		$usbVal = $redis->readByKey( 'usb.status' );
@@ -228,67 +255,44 @@ class IndexController extends BaseController
 		else
 			$usbData = array();
 
-		// Alived machine
-		$alivedUsb = array();
-		$alivedBTC = false;
-		$alivedLTC = false;
 		foreach ( $output as $r )
 		{
+			//preg_match( '/.*-u\s(.+)\s-p.*/' , $r , $match_user_btc );
+			//preg_match( '/.*--userpass=(.*)\:.*/' , $r , $match_user_ltc );
+
 			preg_match( '/.*(cgminer).*/' , $r , $match_btc );
 			preg_match( '/.*(minerd).*/' , $r , $match_ltc );
 
-			// if LTC model
-			if ( empty( $match_btc[1] ) && !empty( $match_ltc[1] ) )
+			//preg_match( '/.*-o\s(.+)\s-u.*/' , $r , $match_url_btc );
+			//preg_match( '/.*--url=(.*)\s--userpass.*/' , $r , $match_url_ltc );
+
+			preg_match( '/.*-S\s(.+).*/' , $r , $match_usb_btc );
+			preg_match( '/.*--gc3355=(.+)\s--url=.*/' , $r , $match_usb_ltc );
+
+			if ( !array_key_exists( $match_usb_btc[1] , $usbData ) && !array_key_exists( $match_usb_ltc[1] , $usbData ) )
 			{
-				$alivedLTC = true;
+				$match_usb = !empty( $match_usb_btc[1] ) ? $match_usb_btc[1] : $match_usb_ltc[1];
+				$this->actionShutdown( true , $match_usb );
 				continue;
 			}
-			// if BTC model
-			else if ( !empty( $match_btc[1] ) && empty( $match_ltc[1] ) )
-				$alivedBTC = true;
-				
-			// Match all usb machine
-			preg_match_all( '/\s-S\s([^\s]+)/' , $r , $match_usb );
 
-			// Get Matched machine
-			$match_all_usb_ary = $match_usb[1];
+			if ( !empty( $match_btc[1] ) && !array_key_exists( $match_usb_btc[1] , $alived ) )
+				$alived[$match_usb_btc[1]] = 'btc';
 
-			// If BTC model and no usb machine run
-			if ( !empty( $match_btc[1] ) && empty( $match_all_usb_ary ) )
-				continue;
-
-			foreach ( $match_all_usb_ary as $usb )
-			{
-				if ( !in_array( $usb , $alivedUsb ) )
-					$alivedUsb[] = $usb;
-			}
+			if ( !empty( $match_ltc[1] ) && !array_key_exists( $match_usb_ltc[1] , $alived ) )
+				$alived[$match_usb_ltc[1]] = 'ltc';
 		}
 
-		if ( $alivedBTC === true )
-			$alived['BTC'] = $alivedUsb;
-		else
-			$alived['BTC'] = array();
+		ksort( $alived );
 
-		if ( $alivedLTC === true )
-			$alived['LTC'] = $alivedUsb;
-		else
-			$alived['LTC'] = array();
-
-		sort( $alived['BTC'] );
-		sort( $alived['LTC'] );
-
-		// Died machine
-		$diedUsb = array();
-		foreach ( $usbData['BTC'] as $usb )
+		foreach ( $usbData as $usb=>$model )
 		{
-			if ( !in_array( $usb , $diedUsb ) && !in_array( $usb , $alivedUsb ) )
-				$diedUsb[] = $usb;
+			if ( !array_key_exists( $usb , $alived ) )
+				$died[$usb] = $model;
 		}
 
-		$died['BTC'] = $died['LTC'] = $diedUsb;
-		sort( $died['BTC'] );
-		sort( $died['LTC'] );
-		
+		ksort( $died );
+
 		$aryData = array();
 		$aryData['alived'] = $alived;
 		$aryData['died'] = $died;
@@ -312,9 +316,8 @@ class IndexController extends BaseController
 		// check data
 		$aryData = $this->actionCheck( true );
 		
-		if ( count( $aryData['alived']['BTC'] ) === 0 && count( $aryData['died']['BTC'] ) > 0 )
-			echo 'restart...';
-			//echo $this->actionRestart( true ) === true ? 1 : -1;
+		if ( count( $aryData['alived'] ) === 0 && count( $aryData['died'] ) > 0 )
+			echo $this->actionRestart( true ) === true ? 1 : -1;
 		else
 			echo 0;
 		exit;
@@ -330,48 +333,35 @@ class IndexController extends BaseController
 
 		$usbData = array();
 		if ( !empty( $usbVal ) )
-		{
 			$usbData = json_decode( $usbVal , true );
-			if ( empty( $usbData['BTC'] ) ) $usbData['BTC'] = array();
-			if ( empty( $usbData['LTC'] ) ) $usbData['LTC'] = array();
-		}
 
 		exec( SUDO_COMMAND.'ls /dev/*USB*' , $output );
 
-		$newUsbData = array('BTC'=>array(),'LTC'=>array());
-		foreach ( $usbData['BTC'] as $usb )
+		$waitSetUsb = array();
+		foreach ( $usbData as $uk=>$u )
 		{
-			if ( in_array( $usb , $output ) )
-			{
-				$newUsbData['BTC'][] = $usb;
-				$newUsbData['LTC'][] = $usb;
-			}
+			if ( !in_array( $uk , $output ) )
+				unset( $usbData[$uk] );
+			else if ( $u == -1 )
+				$waitSetUsb[] = $uk;
 		}
-		$usbData = $newUsbData;
 
-		$aryNewMachine = array();
 		foreach ( $output as $r )
 		{
-			if ( !in_array( $r , $usbData['BTC'] ) )
+			if ( !array_key_exists( $r , $usbData ) )
 			{
-				$usbData['BTC'][] = $r;
-				$usbData['LTC'][] = $r;
-				$aryNewMachine[] = $r;
+				$usbData[$r] = -1;
+				$waitSetUsb[] = $r;
 			}
 		}
 
 		$redis->writeByKey( 'usb.status' , json_encode( $usbData ) );
-
-		if ( count( $aryNewMachine ) > 0 )
-			$this->actionRestart( true );
-
-		echo json_encode( $aryNewMachine );
+		echo json_encode( $waitSetUsb );
 	}
 
 	/**
 	 * set usb state
 	 */
-	/*
 	public function actionUsbset()
 	{
 		$redis = $this->getRedis();
@@ -404,12 +394,10 @@ class IndexController extends BaseController
 
 		echo '200';exit;
 	}
-	*/
 
 	/**
 	 * restart target usb
 	 */
-	/*
 	public function actionRestartTarget()
 	{
 		$setUsbKey = isset( $_GET['usb'] ) ? htmlspecialchars( $_GET['usb'] ) : '';
@@ -439,7 +427,6 @@ class IndexController extends BaseController
 
 		echo '200';exit;
 	}
-	*/
 
 	/**
 	 * get super model state

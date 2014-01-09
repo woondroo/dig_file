@@ -1,1 +1,1 @@
-{"ad":"stratum+tcp:\/\/stratum.f2pool.com:3333","ac":"wengebin.002","pw":"123456","su":0}
+{"ad":"stratum+tcp:\/\/stratum.f2pool.com:3333","ac":"wengebin.002","pw":"123456","su":1}

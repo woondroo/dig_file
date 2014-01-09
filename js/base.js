@@ -5,7 +5,6 @@ var actions = {
 		url_shutdown		: set_url_shutdown,
 		url_supermodel		: set_url_supermodel,
 		url_usbstate		: set_url_usbstate,
-		url_usbset			: set_url_usbset,
 		url_check			: set_url_check,
 		runstate			: false
 	},
@@ -36,10 +35,6 @@ var actions = {
 	// check usb run state
 	usbstate : function(){
 		this.sendPost( 'usbstate_success' , this.setting.url_usbstate );
-	},
-	// set usb mode
-	usbset : function( usb , mode ){
-		this.sendPost( 'usbset_success' , this.setting.url_usbset , {'usb':usb , 'to':mode} );
 	},
 	// check current run state
 	check : function(){
@@ -74,9 +69,11 @@ var actionSuccess = {
 		// usb-port : /dev/ttyUSB0 , usb-text : 新USB挖矿设备，请选择挖矿模式。
 		newusb : '<div id="newusb-{usb-port}" class="panel panel-primary"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br><br><button type="button" class="btn btn-sm btn-default btn-run-ltc" tar="{usb-port}">运行LTC</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-btc" tar="{usb-port}">运行BTC</button></div></div>',
 		// usb-port : /dev/ttyUSB0 , usb-run-tip-type : default|waining , usb-text : 正在运行BTC [正常]|目标运行BTC [已停止] , usb-restart-text : 重启|立即启动
-		btcstate : '<div id="btcstate-{usb-port}" class="panel panel-{usb-run-tip-type}"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br><br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-ltc" tar="{usb-port}">运行LTC</button></div></div>',
+		btcstate : '<div id="btcstate-{usb-port}" class="panel panel-{usb-run-tip-type}"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br></div></div>',
+///<br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-ltc" tar="{usb-port}">运行LTC</button>
 		// usb-port : /dev/ttyUSB0 , usb-run-tip-type : default|waining , usb-text : 正在运行LTC [正常]|目标运行LTC [已停止] , usb-restart-text : 重启|立即启动
-		ltcstate : '<div id="ltcstate-{usb-port}" class="panel panel-{usb-run-tip-type}"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br><br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-btc" tar="{usb-port}">运行BTC</button></div></div>',
+		ltcstate : '<div id="ltcstate-{usb-port}" class="panel panel-{usb-run-tip-type}"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br></div></div>',
+//<br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-btc" tar="{usb-port}">运行BTC</button>
 		// data-tip : 还未发现新挖矿设备!|暂无设备运行!
 		nulldata : '<div class="alert alert-success important-tip">{data-tip}</div>'
 	},
@@ -155,61 +152,7 @@ var actionSuccess = {
 		actions.check();
 	},
 	usbstate_success : function( data ){
-		if ( data === -1 ) return;
-
-		data = eval( '('+data+')' );
-
-		var html = '';
-		if ( data.length <= 0 )
-		{
-			html = replaceAll( '{data-tip}' , '还未发现新挖矿设备!' , this.templates.nulldata );
-		}
-		else
-		{
-			var lines = Math.ceil( data.length / 3 );
-			var last = data.length % 3;
-			var circle = 0;
-			for ( var i = 0; i < data.length; i++ )
-			{
-				if ( circle === 0 )
-					html += '<div class="col-sm-4">';
-
-				var tmp_str = replaceAll( '{usb-port}' , data[i] , this.templates.newusb );
-				tmp_str = replaceAll( '{usb-text}' , '新USB挖矿设备，请选择挖矿模式。' , tmp_str );
-				html += tmp_str;
-
-				circle ++;
-				if ( circle === lines && last > 0 )
-				{
-					html += '</div>';
-					last --;
-					circle = 0;
-				}
-				else if ( circle === lines-1 && last <= 0 )
-				{
-					html += '</div>';
-					circle = 0;
-				}
-			}
-
-			if ( circle > 0 )
-				html += '</div>';
-		}
-
-		$('#new-machine-container').html( html );
-		
-		$('.btn-run-btc').click(function(){
-			actions.usbset( $(this).attr('tar') , 'btc' );
-			$(this).parent().html( '正在设置并运行...<br><br><br>' );
-		});
-
-		$('.btn-run-ltc').click(function(){
-			actions.usbset( $(this).attr('tar') , 'ltc' );
-			$(this).parent().html( '正在设置并运行...<br><br><br>' );
-		});
-	},
-	usbset_success : function( data ){
-		return true;
+		// do nothing
 	},
 	check_success : function( data ){
 		if ( data === -1 ) return;
@@ -233,40 +176,36 @@ var actionSuccess = {
 		// alived machine not empty
 		if ( !in_array( data.alived , null_data ) )
 		{
-			for ( var key in data.alived )
+			for ( var i = 0; i < data.alived.BTC.length; i++ )
 			{
-				var key_set = replaceAll( '/' , '_' , key );
-				if ( data.alived[key] === 'btc' )
-				{
-					eval( 'btc_machine.'+key_set+' = 1;' );
-					btc_data.count ++;
-				}
+				var usb_set = replaceAll( '/' , '_' , data.alived.BTC[i]+'' );
+				eval( 'btc_machine.'+usb_set+' = 1;' );
+				btc_data.count ++;
+			}
 
-				if ( data.alived[key] === 'ltc' )
-				{
-					eval( 'ltc_machine.'+key_set+' = 1;' );
-					ltc_data.count ++;
-				}
+			for ( var i = 0; i < data.alived.LTC.length; i++ )
+			{
+				var usb_set = replaceAll( '/' , '_' , data.alived.LTC[i]+'' );
+				eval( 'ltc_machine.'+usb_set+' = 1;' );
+				ltc_data.count ++;
 			}
 		}
 
 		// died machine not empty
 		if ( !in_array( data.died , null_data ) )
 		{
-			for ( var key in data.died )
+			for ( var i = 0; i < data.died.BTC.length; i++ )
 			{
-				var key_set = replaceAll( '/' , '_' , key );
-				if ( data.died[key] === 'btc' )
-				{
-					eval( 'btc_machine.'+key_set+' = -1;' );
-					btc_data.count ++;
-				}
+				var usb_set = replaceAll( '/' , '_' , data.died.BTC[i]+'' );
+				eval( 'btc_machine.'+usb_set+' = -1;' );
+				btc_data.count ++;
+			}
 
-				if ( data.died[key] === 'ltc' )
-				{
-					eval( 'ltc_machine.'+key_set+' = -1;' );
-					ltc_data.count ++;
-				}
+			for ( var i = 0; i < data.died.LTC.length; i++ )
+			{
+				var usb_set = replaceAll( '/' , '_' , data.died.LTC[i]+'' );
+				eval( 'ltc_machine.'+usb_set+' = -1;' );
+				ltc_data.count ++;
 			}
 		}
 
@@ -293,7 +232,7 @@ var actionSuccess = {
 				var tmp_str = replaceAll( '{usb-port}' , key_set , this.templates.btcstate );
 				tmp_str = replaceAll( '{usb-run-tip-type}' , btc_machine[key] === 1 ? 'default' : 'warning' , tmp_str );
 				tmp_str = replaceAll( '{usb-text}' , btc_machine[key] === 1 ? '正在运行BTC [正常]' : '目标运行BTC [已停止]' , tmp_str );
-				tmp_str = replaceAll( '{usb-restart-text}' , btc_machine[key] === 1 ? '重启' : '立即启动' , tmp_str );
+				//tmp_str = replaceAll( '{usb-restart-text}' , btc_machine[key] === 1 ? '重启' : '立即启动' , tmp_str );
 				html_btc += tmp_str;
 
 				btc_data.circle ++;
@@ -331,7 +270,7 @@ var actionSuccess = {
 				var tmp_str = replaceAll( '{usb-port}' , key_set , this.templates.ltcstate );
 				tmp_str = replaceAll( '{usb-run-tip-type}' , ltc_machine[key] === 1 ? 'default' : 'warning' , tmp_str );
 				tmp_str = replaceAll( '{usb-text}' , ltc_machine[key] === 1 ? '正在运行LTC [正常]' : '目标运行LTC [已停止]' , tmp_str );
-				tmp_str = replaceAll( '{usb-restart-text}' , ltc_machine[key] === 1 ? '重启' : '立即启动' , tmp_str );
+				//tmp_str = replaceAll( '{usb-restart-text}' , ltc_machine[key] === 1 ? '重启' : '立即启动' , tmp_str );
 				html_ltc += tmp_str;
 
 				ltc_data.circle ++;
@@ -354,21 +293,6 @@ var actionSuccess = {
 
 		$('#btc-machine-container').html( html_btc );
 		$('#ltc-machine-container').html( html_ltc );
-		
-		$('.btn-run-btc').click(function(){
-			actions.usbset( $(this).attr('tar') , 'btc' );
-			$(this).parent().html( '正在设置并运行...<br><br><br>' );
-		});
-
-		$('.btn-run-ltc').click(function(){
-			actions.usbset( $(this).attr('tar') , 'ltc' );
-			$(this).parent().html( '正在设置并运行...<br><br><br>' );
-		});
-
-		$('.btn-run-restart').click(function(){
-			actions.restartTar( $(this).attr('tar') );
-			$(this).parent().html( '正在启动此设备...<br><br><br>' );
-		});
 	}
 };
 
@@ -378,14 +302,17 @@ var resetTopBt = {
 		actions.sendPost( "resetTopBt.checkResult(r)" , actions.setting.url_check , {} , 1 );
 	},
 	checkResult : function( r ){
+		if ( typeof need_show_check_result != "undefined" && need_show_check_result === true )
+			actionSuccess.check_success( r );
+
 		resetTopBt.publicBtActive();
 		r = eval( '('+r+')' );
 		
-		if ( r.alived == '' )
+		if ( r.alived.BTC.length === 0 && r.alived.LTC.length === 0 )
 			this.stopBtActive();
-		else if ( r.alived != '' && r.super == false )
+		else if ( (r.alived.BTC.length > 0 || r.alived.LTC.length) && r.super == false )
 			this.runBtActive();
-		else if ( r.alived != '' && r.super == true )
+		else if ( (r.alived.BTC.length > 0 || r.alived.LTC.length) && r.super == true )
 			this.superBtActive();
 		else
 			this.stopBtActive();
