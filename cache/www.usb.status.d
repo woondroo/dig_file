@@ -1,1 +1,1 @@
-{"BTC":[],"LTC":[]}
+{"BTC":["\/dev\/ttyUSB0","\/dev\/ttyUSB1","\/dev\/ttyUSB2","\/dev\/ttyUSB3"],"LTC":["\/dev\/ttyUSB0","\/dev\/ttyUSB1","\/dev\/ttyUSB2","\/dev\/ttyUSB3"]}
