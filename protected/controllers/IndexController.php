@@ -365,7 +365,10 @@ class IndexController extends BaseController
 		if ( count( $aryNewMachine ) > 0 )
 			$this->actionRestart( true );
 
-		echo json_encode( $aryNewMachine );
+		if ( count( $usbData['BTC'] ) === 0 && count( $usbData['LTC'] ) === 0 )
+			$this->actionShutdown( true );
+
+		echo json_encode( $usbData );
 	}
 
 	/**

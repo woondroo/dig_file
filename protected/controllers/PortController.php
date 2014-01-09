@@ -105,9 +105,24 @@ class PortController extends BaseController
 	 */
 	public function actionCancelbind()
 	{
-		$boolResult = $this->generateRKEY();
-		if ( $boolResult === true )
-			$boolResult = $this->actionGeneratekey( true );
+		// Get key
+		$os = DIRECTORY_SEPARATOR=='\\' ? "windows" : "linux";
+		$mac_addr = new CMac( $os );
+
+		$strRKEY = '';
+		if ( file_exists( WEB_ROOT.'/js/RKEY.TXT' ) )
+			$strRKEY = file_get_contents( WEB_ROOT.'/js/RKEY.TXT' );
+
+		// send cancel bind request
+		$aryData = UtilApi::callCancelbind( md5($mac_addr->mac_addr.'-'.$strRKEY) );
+
+		$boolResult = false;
+		if ( $aryData['ISOK'] === 1 )
+		{	
+			$boolResult = $this->generateRKEY();
+			if ( $boolResult === true )
+				$boolResult = $this->actionGeneratekey( true );
+		}
 
 		if ( $boolResult === true )
 			UtilMsg::saveTipToSession( '取消绑定成功，请重新扫描绑定！' );

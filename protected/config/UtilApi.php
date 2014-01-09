@@ -39,6 +39,20 @@ class UtilApi
 	{
 		return CApi::callApi( MAIN_DOMAIN."/sync" , $_aryData , MAIN_DOMAIN_KEY , true );
 	}
+
+	/**
+	 * 解除绑定
+	 *
+	 * @param array $_strKey 需要解除绑定的设备KEY
+	 * @return array
+	 * 			<pre>
+	 * 					return array( 'ISOK'=>bool,'DATA'=>array(),'ERROR'=>'错误号' );
+	 * 			</pre>
+	 */
+	public static function callCancelbind( $_strKey = '' )
+	{
+		return CApi::callApi( MAIN_DOMAIN."/cancelbindNet" , array( 'key'=>$_strKey ) , MAIN_DOMAIN_KEY , true );
+	}
 	
 	//end class
 }

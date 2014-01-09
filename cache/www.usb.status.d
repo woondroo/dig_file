@@ -1,1 +1,1 @@
-{"BTC":["\/dev\/ttyUSB0"],"LTC":["\/dev\/ttyUSB0"]}
+{"BTC":[],"LTC":[]}
