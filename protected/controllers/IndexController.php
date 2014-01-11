@@ -361,8 +361,9 @@ class IndexController extends BaseController
 		$aryData = $this->actionCheck( true );
 		
 		if ( count( $aryData['alived']['BTC'] ) === 0 && count( $aryData['died']['BTC'] ) > 0 )
-			echo 'restart...';
-			//echo $this->actionRestart( true ) === true ? 1 : -1;
+		{
+			echo $this->actionRestart( true ) === true ? 1 : -1;
+		}
 		else
 			echo 0;
 		exit;
