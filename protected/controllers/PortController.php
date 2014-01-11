@@ -142,5 +142,57 @@ class PortController extends BaseController
 		return true;
 	}
 
+	/**
+	 * Change mac address once
+	 */
+	public function actionGeneratemac()
+	{
+		$configFile = '/etc/config/network';
+		$checkFile = WEB_ROOT.'/cache/gmac.d';
+		if ( file_exists( $checkFile ) )
+		{
+			echo '500';
+			exit;
+		}
+		
+		$content = file_get_contents( $configFile );
+
+		$old_mac = '';
+		if ( preg_match( "/[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f]/i", $content, $temp_array ) )
+			$old_mac = $temp_array[0];
+
+		if ( empty( $old_mac ) )
+		{
+			echo '500';
+			exit;
+		}
+
+		$strTmp = '1234567890abcdef';
+		$mac_str_1_p1 = $strTmp{rand(0, strlen($strTmp)-1)};
+		$mac_str_1_p2 = $strTmp{rand(0, strlen($strTmp)-1)};
+		$mac_str_2_p1 = $strTmp{rand(0, strlen($strTmp)-1)};
+		$mac_str_2_p2 = $strTmp{rand(0, strlen($strTmp)-1)};
+		
+		$mac_str_1 = $mac_str_1_p1.$mac_str_1_p2;
+		$mac_str_2 = $mac_str_2_p1.$mac_str_2_p2;
+
+		$aryMacData = explode( ':' , $old_mac );
+		$aryMacData[count( $aryMacData )-2] = $mac_str_1;
+		$aryMacData[count( $aryMacData )-1] = $mac_str_2;
+
+		$new_mac = implode( ':' , $aryMacData );
+		$storeContent = str_replace( $old_mac , $new_mac , $content );
+
+		$conf = fopen( $configFile , 'w' );
+		fwrite( $conf , $storeContent );
+		fclose( $conf );
+		
+		$macf = fopen( $checkFile , 'w' );
+		fwrite( $macf , $new_mac );
+		fclose( $macf );
+
+		echo '200';exit;
+	}
+
 //end class
 }
