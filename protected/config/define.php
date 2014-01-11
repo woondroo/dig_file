@@ -31,6 +31,3 @@ define( 'REDIS_CONNECT_PORT' , '6379' );
 define( 'REDIS_DISTRICT_NAME' , 'www' );
 //是否开启缓存
 define( 'CACHE_STATUS' , true );
-
-//当前版本号
-define( 'CUR_VERSION' , '1.0' );

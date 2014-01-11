@@ -214,7 +214,7 @@ class IndexController extends BaseController
 
 			if ( !empty( $_strSingleShutDown ) )
 			{
-				preg_match( '/.*--gc3355=(.+)\s--url=.*/' , $r , $match_usb );
+				preg_match( '/.*--gc3355=(.+)\s--.*/' , $r , $match_usb );
 				if ( in_array( $_strSingleShutDown , array( $match_usb[1] ) ) ) $singlePids[] = $match[1];
 			}
 		}
@@ -273,7 +273,7 @@ class IndexController extends BaseController
 				
 			// Match all usb machine
 			//preg_match_all( '/\s-S\s([^\s]+)/' , $r , $match_usb );
-			preg_match( '/.*--gc3355=(.+)\s--url=.*/' , $r , $match_usb );
+			preg_match( '/.*--gc3355=(.+)\s--.*/' , $r , $match_usb );
 
 			// Get Matched machine
 			//$match_all_usb_ary = $match_usb[1];
@@ -283,7 +283,7 @@ class IndexController extends BaseController
 			if ( !empty( $match_btc[1] ) && empty( $match_all_usb_ary ) )
 				continue;
 			*/
-			if ( !in_array( $match_usb[1] , $usbData['LTC'] ) )
+			if ( !empty( $match_usb[1] ) && !in_array( $match_usb[1] , $usbData['LTC'] ) )
 			{
 				$this->actionShutdown( true , $match_usb[1] );
 				continue;
