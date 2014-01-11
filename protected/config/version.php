@@ -1,4 +1,3 @@
 <?php
-define( 'SUDO_COMMAND' , 'sudo ' );
-define( 'CUR_VERSION' , '1.1' );
+define( 'CUR_VERSION' , '1.3' );
 ?>
