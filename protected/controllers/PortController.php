@@ -81,7 +81,7 @@ class PortController extends BaseController
 			$strRKEY = file_get_contents( WEB_ROOT.'/js/RKEY.TXT' );
 		}
 
-		if ( isset( $strRKEY ) && empty( $strRKEY ) )
+		if ( !isset( $strRKEY ) || empty( $strRKEY ) )
 		{
 			$this->generateRKEY();
 			$strRKEY = file_get_contents( WEB_ROOT.'/js/RKEY.TXT' );
