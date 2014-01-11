@@ -214,7 +214,7 @@ class IndexController extends BaseController
 
 			if ( !empty( $_strSingleShutDown ) )
 			{
-				preg_match( '/.*--gc3355=(.+)\s--.*/' , $r , $match_usb );
+				preg_match( '/.*--gc3355=(.+?)\s--.*/' , $r , $match_usb );
 				if ( in_array( $_strSingleShutDown , array( $match_usb[1] ) ) ) $singlePids[] = $match[1];
 			}
 		}
@@ -273,7 +273,7 @@ class IndexController extends BaseController
 				
 			// Match all usb machine
 			//preg_match_all( '/\s-S\s([^\s]+)/' , $r , $match_usb );
-			preg_match( '/.*--gc3355=(.+)\s--.*/' , $r , $match_usb );
+			preg_match( '/.*--gc3355=(.+?)\s--.*/' , $r , $match_usb );
 
 			// Get Matched machine
 			//$match_all_usb_ary = $match_usb[1];
