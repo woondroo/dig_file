@@ -14,12 +14,6 @@ define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 //sudo command
 define( 'SUDO_COMMAND' , 'sudo ' );
 
-//WEB数据库配置
-$efine('DB_WEB_DSN','mysql:host=localhost;dbname=');
-define('DB_WEB_USERNAME','');
-define('DB_WEB_PASSWORD','');
-define('DB_WEB_CHARGSET','utf8');
-
 //是否开启地址重写
 define( 'REWRITE_MODE' , false );
 //开始运行时间(秒)
