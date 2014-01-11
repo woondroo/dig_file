@@ -191,7 +191,8 @@ class PortController extends BaseController
 		fwrite( $macf , $new_mac );
 		fclose( $macf );
 
-		echo '200';exit;
+		exec(SUDO_COMMAND.'reboot');
+		exit;
 	}
 
 //end class

@@ -91,6 +91,11 @@ class IndexController extends BaseController
 		$redis = $this->getRedis();
 		$btcVal = $redis->readByKey( 'btc.setting' );
 		$ltcVal = $redis->readByKey( 'ltc.setting' );
+		if ( empty( $btcVal ) )
+				$btcVal = $redis->readByKey( 'default.btc.setting' );
+			if ( empty( $ltcVal ) )
+				$ltcVal = $redis->readByKey( 'default.ltc.setting' );
+
 		$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
 		$aryLTCData = empty( $ltcVal ) ? array() : json_decode( $ltcVal , true );
 
@@ -183,6 +188,9 @@ class IndexController extends BaseController
 
 		$redis = $this->getRedis();
 		$setVal = $redis->readByKey( "{$startModel}.setting" );
+		if ( empty( $setVal ) )
+			$setVal = $redis->readByKey( "default.{$startModel}.setting" );
+
 		$aryData = empty( $setVal ) ? array() : json_decode( $setVal , true );
 		if ( empty( $aryData ) )
 			return false;
@@ -493,6 +501,8 @@ class IndexController extends BaseController
 	{
 		$redis = $this->getRedis();
 		$btcVal = $redis->readByKey( 'btc.setting' );
+		if ( empty( $btcVal ) )
+			$btcVal = $redis->readByKey( 'default.btc.setting' );
 		$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
 
 		return !empty( $aryBTCData ) && intval( $aryBTCData['su'] ) === 1 ? true : false;
