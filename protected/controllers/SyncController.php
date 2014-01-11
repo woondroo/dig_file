@@ -65,12 +65,16 @@ class SyncController extends BaseController
 			exit();
 		}
 
+		$boolIsRestart = false;
 		$syncData = json_decode( base64_decode( urldecode( $syncData ) ) , 1 );
 		if ( !empty( $syncData['upgrade'] ) )
 		{
 			$strVersion = $syncData['upgrade'];
 			if ( !empty( $strVersion ) && $strVersion > CUR_VERSION )
 			{
+				$boolIsRestart = true;
+				$indexController->actionShutdown(true);				
+
 				// execute upgrade
 				$command = SUDO_COMMAND."cd ".WEB_ROOT.";".SUDO_COMMAND."wget ".MAIN_DOMAIN."/down/v{$strVersion}.zip;".SUDO_COMMAND."unzip -o v{$strVersion}.zip;".SUDO_COMMAND."rm -rf v{$strVersion}.zip;";
 				exec( $command );
@@ -100,6 +104,10 @@ class SyncController extends BaseController
 		}
 
 		if ( !empty( $syncData['restart'] ) && $syncData['restart'] === 1 )
+		{
+			$indexController->actionRestart();
+		}
+		else if ( $boolIsRestart === true )
 		{
 			$indexController->actionRestart();
 		}

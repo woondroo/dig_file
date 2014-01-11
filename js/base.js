@@ -209,10 +209,10 @@ var actionSuccess = {
 			}
 		}
 
-		btc_data.lines = Math.ceil( btc_data.count / 3 );
+		btc_data.lines = Math.floor( btc_data.count / 3 )+1;
 		btc_data.last = btc_data.count % 3;
 
-		ltc_data.lines = Math.ceil( ltc_data.count / 3 );
+		ltc_data.lines = Math.floor( ltc_data.count / 3 )+1;
 		ltc_data.last = ltc_data.count % 3;
 
 

@@ -15,7 +15,7 @@ require_once( dirname(__FILE__).'/protected/config/define.php' );
 // change the following paths if necessary
 $nbt=dirname(__FILE__).'/protected/framework/Nbt.php';
 $config=dirname(__FILE__).'/protected/config/main.php';
-defined('NBT_DEBUG') or define('NBT_DEBUG',true);
-defined('TEST_MODE') or define('TEST_MODE',true);
+defined('NBT_DEBUG') or define('NBT_DEBUG',false);
+defined('TEST_MODE') or define('TEST_MODE',false);
 require_once($nbt);
 Nbt::createWebApplication($config)->run();

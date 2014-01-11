@@ -1,1 +1,1 @@
-{"BTC":["\/dev\/ttyUSB0","\/dev\/ttyUSB1","\/dev\/ttyUSB2","\/dev\/ttyUSB3"],"LTC":["\/dev\/ttyUSB0","\/dev\/ttyUSB1","\/dev\/ttyUSB2","\/dev\/ttyUSB3"]}
+{"BTC":["\/dev\/ttyUSB1","\/dev\/ttyUSB4","\/dev\/ttyUSB5","\/dev\/ttyUSB6","\/dev\/ttyUSB2","\/dev\/ttyUSB0","\/dev\/ttyUSB3"],"LTC":["\/dev\/ttyUSB1","\/dev\/ttyUSB4","\/dev\/ttyUSB5","\/dev\/ttyUSB6","\/dev\/ttyUSB2","\/dev\/ttyUSB0","\/dev\/ttyUSB3"]}

@@ -1,1 +1,1 @@
-add_machine('50b6fa5254e89bb9f90cc91973ffe35c','192.168.1.100');
+add_machine('f25f8bf88e2dc3196d1ef3eb7e676793','192.168.0.101');
