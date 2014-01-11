@@ -8,16 +8,16 @@
 define('WEB_ROOT',dirname(dirname(dirname(__FILE__))));
 
 //主域名设置
-define( 'MAIN_DOMAIN' , 'http://box.eiodesign.com' );
+define( 'MAIN_DOMAIN' , 'http://wiibox.com' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 
 //sudo command
 define( 'SUDO_COMMAND' , 'sudo ' );
 
 //WEB数据库配置
-define('DB_WEB_DSN','mysql:host=localhost;dbname=www_wiibox');
-define('DB_WEB_USERNAME','root');
-define('DB_WEB_PASSWORD','wengebin729x');
+define('DB_WEB_DSN','mysql:host=localhost;dbname=');
+define('DB_WEB_USERNAME','');
+define('DB_WEB_PASSWORD','');
 define('DB_WEB_CHARGSET','utf8');
 
 //是否开启地址重写
@@ -39,4 +39,4 @@ define( 'REDIS_DISTRICT_NAME' , 'www' );
 define( 'CACHE_STATUS' , true );
 
 //当前版本号
-define( 'CUR_VERSION' , '4.2' );
+define( 'CUR_VERSION' , '1.0' );
