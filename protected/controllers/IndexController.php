@@ -220,9 +220,9 @@ class IndexController extends BaseController
 		}
 
 		if ( !empty( $_strSingleShutDown ) )
-			exec( SUDO_COMMAND.'kill -QUIT '.implode( ' ' , $singlePids ) );
+			exec( SUDO_COMMAND.'kill -9 '.implode( ' ' , $singlePids ) );
 		else if ( !empty( $pids ) )
-			exec( SUDO_COMMAND.'kill -QUIT '.implode( ' ' , $pids ) );
+			exec( SUDO_COMMAND.'kill -9 '.implode( ' ' , $pids ) );
 		
 		if ( $_boolIsNoExist === false )
 		{
