@@ -11,9 +11,6 @@ define('WEB_ROOT',dirname(dirname(dirname(__FILE__))));
 define( 'MAIN_DOMAIN' , 'http://wiibox.net' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 
-//sudo command
-define( 'SUDO_COMMAND' , 'sudo ' );
-
 //是否开启地址重写
 define( 'REWRITE_MODE' , false );
 //开始运行时间(秒)
