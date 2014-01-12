@@ -172,13 +172,21 @@ class PortController extends BaseController
 		$mac_str_1_p2 = $strTmp{rand(0, strlen($strTmp)-1)};
 		$mac_str_2_p1 = $strTmp{rand(0, strlen($strTmp)-1)};
 		$mac_str_2_p2 = $strTmp{rand(0, strlen($strTmp)-1)};
+		$mac_str_3_p1 = $strTmp{rand(0, strlen($strTmp)-1)};
+		$mac_str_3_p2 = $strTmp{rand(0, strlen($strTmp)-1)};
+		$mac_str_4_p1 = $strTmp{rand(0, strlen($strTmp)-1)};
+		$mac_str_4_p2 = $strTmp{rand(0, strlen($strTmp)-1)};
 		
 		$mac_str_1 = $mac_str_1_p1.$mac_str_1_p2;
 		$mac_str_2 = $mac_str_2_p1.$mac_str_2_p2;
+		$mac_str_3 = $mac_str_3_p1.$mac_str_3_p2;
+		$mac_str_4 = $mac_str_4_p1.$mac_str_4_p2;
 
 		$aryMacData = explode( ':' , $old_mac );
-		$aryMacData[count( $aryMacData )-2] = $mac_str_1;
-		$aryMacData[count( $aryMacData )-1] = $mac_str_2;
+		$aryMacData[count( $aryMacData )-4] = $mac_str_1;
+		$aryMacData[count( $aryMacData )-3] = $mac_str_2;
+		$aryMacData[count( $aryMacData )-2] = $mac_str_3;
+		$aryMacData[count( $aryMacData )-1] = $mac_str_4;
 
 		$new_mac = implode( ':' , $aryMacData );
 		$storeContent = str_replace( $old_mac , $new_mac , $content );
