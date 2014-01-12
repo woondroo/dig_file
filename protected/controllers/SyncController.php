@@ -83,6 +83,8 @@ class SyncController extends BaseController
 
 		if ( !empty( $syncData['config'] ) )
 		{
+			$boolIsRestart = true;
+
 			$aryConfig = json_decode( $syncData['config'] , 1 );
 
 			$aryBTCData = array();
