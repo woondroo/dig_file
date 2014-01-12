@@ -92,9 +92,9 @@ class IndexController extends BaseController
 		$btcVal = $redis->readByKey( 'btc.setting' );
 		$ltcVal = $redis->readByKey( 'ltc.setting' );
 		if ( empty( $btcVal ) )
-				$btcVal = $redis->readByKey( 'default.btc.setting' );
-			if ( empty( $ltcVal ) )
-				$ltcVal = $redis->readByKey( 'default.ltc.setting' );
+			$btcVal = $this->readDefault( 'btc' );
+		if ( empty( $ltcVal ) )
+			$ltcVal = $this->readDefault( 'ltc' );
 
 		$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
 		$aryLTCData = empty( $ltcVal ) ? array() : json_decode( $ltcVal , true );
@@ -189,7 +189,7 @@ class IndexController extends BaseController
 		$redis = $this->getRedis();
 		$setVal = $redis->readByKey( "{$startModel}.setting" );
 		if ( empty( $setVal ) )
-			$setVal = $redis->readByKey( "default.{$startModel}.setting" );
+			$setVal = $this->readDefault( "{$startModel}" );
 
 		$aryData = empty( $setVal ) ? array() : json_decode( $setVal , true );
 		if ( empty( $aryData ) )
@@ -502,7 +502,7 @@ class IndexController extends BaseController
 		$redis = $this->getRedis();
 		$btcVal = $redis->readByKey( 'btc.setting' );
 		if ( empty( $btcVal ) )
-			$btcVal = $redis->readByKey( 'default.btc.setting' );
+			$btcVal = $this->readDefault( 'btc' );
 		$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
 
 		return !empty( $aryBTCData ) && intval( $aryBTCData['su'] ) === 1 ? true : false;
@@ -517,6 +517,30 @@ class IndexController extends BaseController
 			$this->_redis = new CRedisFile();
 
 		return $this->_redis;
+	}
+
+	/**
+	 * read default config
+	 */
+	public function readDefault( $_strTar = '' )
+	{
+		if ( empty( $_strTar ) )
+			return array();
+
+		// Get key
+		$os = DIRECTORY_SEPARATOR=='\\' ? "windows" : "linux";
+		$mac_addr = new CMac( $os );
+
+		$strRKEY = '';
+		if ( file_exists( WEB_ROOT.'/js/RKEY.TXT' ) )
+			$strRKEY = file_get_contents( WEB_ROOT.'/js/RKEY.TXT' );
+
+		$strGenerateKey = substr( $_strTar , 0 , 1 ).substr( md5($mac_addr->mac_addr.'-'.$strRKEY) , -10 , 10 );
+
+		$redis = $this->getRedis();
+		$strVal = $redis->readByKey( "default.{$_strTar}.setting" );
+		$strVal = str_replace( '******' , $strGenerateKey , $strVal );
+		return $strVal;
 	}
 
 //end class
