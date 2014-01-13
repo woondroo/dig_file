@@ -8,7 +8,7 @@
 define('WEB_ROOT',dirname(dirname(dirname(__FILE__))));
 
 //主域名设置
-define( 'MAIN_DOMAIN' , 'http://wiibox.net' );
+define( 'MAIN_DOMAIN' , 'http://www.wiibox.net' );
 define( 'MAIN_DOMAIN_KEY' , '123qwe!@#' );
 
 //是否开启地址重写

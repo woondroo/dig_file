@@ -7,7 +7,11 @@
  */
 class IndexController extends BaseController
 {
+	// redis object
 	private $_redis;
+
+	// curent every usb setting
+	private $_usbSet = array();
 
 	/**
 	 * init
@@ -38,7 +42,7 @@ class IndexController extends BaseController
 			$ltcVal = $redis->readByKey( 'ltc.setting' );
 			$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
 			$aryLTCData = empty( $ltcVal ) ? array() : json_decode( $ltcVal , true );
-			
+
 			// if commit save
 			if ( Nbt::app()->request->isPostRequest )
 			{
@@ -88,16 +92,8 @@ class IndexController extends BaseController
 		// is super mode
 		$intIsSuper = isset( $_GET['s'] ) ? intval( $_GET['s'] ) : 0;
 
-		$redis = $this->getRedis();
-		$btcVal = $redis->readByKey( 'btc.setting' );
-		$ltcVal = $redis->readByKey( 'ltc.setting' );
-		if ( empty( $btcVal ) )
-			$btcVal = $this->readDefault( 'btc' );
-		if ( empty( $ltcVal ) )
-			$ltcVal = $this->readDefault( 'ltc' );
-
-		$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
-		$aryLTCData = empty( $ltcVal ) ? array() : json_decode( $ltcVal , true );
+		$aryBTCData = $this->getTarConfig( 'btc' );
+		$aryLTCData = $this->getTarConfig( 'ltc' );
 
 		if ( $intIsSuper === 1 )
 		{
@@ -111,6 +107,10 @@ class IndexController extends BaseController
 		}
 
 		// store data
+		unset( $aryBTCData['acc'] );
+		unset( $aryLTCData['acc'] );
+		$aryBTCData['ac'] = implode( ',' , $aryBTCData['ac'] );
+		$aryLTCData['ac'] = implode( ',' , $aryLTCData['ac'] );
 		$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
 		$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
 
@@ -158,10 +158,21 @@ class IndexController extends BaseController
 			$this->restartByUsb( $usbData['LTC'] , 'ltc' );
 */
 
+		$aryLTCData = $this->getTarConfig( 'ltc' );
 		if ( count( $usbData['LTC'] ) > 0 )
 		{
+			$intUids = $aryLTCData['acc'];
 			foreach ( $usbData['LTC'] as $usb )
-				$this->restartByUsb( $usb , 'ltc' );
+			{
+				$aryConfig = $aryLTCData;
+				if ( $intUids < 1 )
+					$intUids = $aryLTCData['acc'];
+
+				$aryConfig['ac'] = $aryLTCData['ac'][$aryLTCData['acc']-$intUids];
+
+				$this->restartByUsb( $aryConfig , $usb , 'ltc' );
+				$intUids --;
+			}
 		}
 
 		if ( $_boolIsNoExist === false )
@@ -174,11 +185,12 @@ class IndexController extends BaseController
 	/**
 	 * restart program by usb
 	 */
-	public function restartByUsb( $_aryUsb = '' , $_strUsbModel = '' , $_strSingleShutDown = '' )
+	public function restartByUsb( $_aryConfig = array() , $_aryUsb = '' , $_strUsbModel = '' , $_strSingleShutDown = '' )
 	{
-		if ( empty( $_aryUsb ) || empty( $_strUsbModel ) )
+		if ( empty( $_aryConfig ) || empty( $_aryUsb ) || empty( $_strUsbModel ) )
 			return false;
 
+		$aryData = $_aryConfig;
 		$startModel = $_strUsbModel;
 /*
 		$startUsb = '-S '.implode( ' -S ' , $_aryUsb );
@@ -186,12 +198,8 @@ class IndexController extends BaseController
 			$startUsb = $_aryUsb[0];
 */
 
-		$redis = $this->getRedis();
-		$setVal = $redis->readByKey( "{$startModel}.setting" );
-		if ( empty( $setVal ) )
-			$setVal = $this->readDefault( "{$startModel}" );
+		
 
-		$aryData = empty( $setVal ) ? array() : json_decode( $setVal , true );
 		if ( empty( $aryData ) )
 			return false;
 
@@ -486,7 +494,11 @@ class IndexController extends BaseController
 				echo '500';exit;
 		}
 
-		$this->restartByUsb( $setUsbKey , $_strTo );
+		// get config
+		$aryConfig = $this->getTarConfig( $_strTo );
+		$aryConfig['ac'] = $aryConfig['ac'][rand(0,$aryConfig['acc']-1)];
+
+		$this->restartByUsb( $aryConfig , $setUsbKey , $_strTo );
 
 		if ( $_boolIsNoExist === true )
 				return true;
@@ -499,12 +511,7 @@ class IndexController extends BaseController
 	 */
 	public function getSuperModelState()
 	{
-		$redis = $this->getRedis();
-		$btcVal = $redis->readByKey( 'btc.setting' );
-		if ( empty( $btcVal ) )
-			$btcVal = $this->readDefault( 'btc' );
-		$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
-
+		$aryBTCData = $this->getTarConfig( 'btc' );
 		return !empty( $aryBTCData ) && intval( $aryBTCData['su'] ) === 1 ? true : false;
 	}
 
@@ -540,7 +547,57 @@ class IndexController extends BaseController
 		$redis = $this->getRedis();
 		$strVal = $redis->readByKey( "default.{$_strTar}.setting" );
 		$strVal = str_replace( '******' , $strGenerateKey , $strVal );
-		return $strVal;
+		return empty( $strVal ) ? array() : json_decode( $strVal , 1 );
+	}
+
+	/**
+	 * Setting is empty?
+	 */
+	public function isEmptySetting( $_arySetting = array() )
+	{
+		if ( empty( $_arySetting['ad'] ) || empty( $_arySetting['ac'] ) )
+			return true;
+		else
+			return false;
+	}
+
+	/**
+	 * Get config
+	 */
+	public function getTarConfig( $_strTar = '' )
+	{
+		if ( empty( $_strTar ) )
+			return array();
+
+		// get config
+		$redis = $this->getRedis();
+		$setVal = $redis->readByKey( "{$_strTar}.setting" );
+		$aryData = empty( $setVal ) ? array() : json_decode( $setVal , true );
+
+		if ( $this->isEmptySetting( $aryData ) )
+			$aryData = $this->readDefault( $_strTar );
+
+		// parse account
+		$strUids = $aryData['ac'];
+		$aryUids = explode( ',' , $strUids );
+		$aryUidsSet = array();
+		foreach ( $aryUids as $id )
+		{
+			if ( !empty( $id ) )
+				$aryUidsSet[] = $id;
+		}
+
+		$aryData['ac'] = $aryUidsSet;
+		$aryData['acc'] = count( $aryUidsSet );
+		return $aryData;
+	}
+
+	/**
+	 * Get next usb match user
+	 */
+	public function getUsbTarUser()
+	{
+		
 	}
 
 //end class
