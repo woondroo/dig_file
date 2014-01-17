@@ -129,6 +129,9 @@ class IndexController extends BaseController
 		// shutdown all machine
 		$this->actionShutdown( true );
 
+		// restart power
+		CPowerSystem::restartPower( 1000000 );
+
 		$redis = $this->getRedis();
 		$usbVal = $redis->readByKey( 'usb.status' );
 		if ( empty( $usbVal ) )
@@ -221,7 +224,7 @@ class IndexController extends BaseController
 
 		// get btc start command
 		if ( in_array( $startModel , array( 'B' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-B' , 'B' ) ) )
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --gridseed-options=baud=115200,freq=".($aryData['su'] == 0 ? '600' : '700').",chips=5,modules=1,usefifo=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --gridseed-options=baud=115200,freq=".($aryData['su'] == 0 ? '600' : '700').",chips=5,modules=1,usefifo=0 --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
 		// get ltc start command
 		else if ( in_array( $startModel , array( 'L' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-L' , 'L' ) ) )
 		{
@@ -453,10 +456,8 @@ class IndexController extends BaseController
 				}
 
 				// if not run any programe
-				if ( $boolIsNotRun === true )
-					$aryAllUsb = $output;
-				else
-					$aryAllUsb = array_merge( $aryAllUsb , $output );
+				$aryAllUsb = array_merge( $aryAllUsb , $output );
+				$aryAllUsb = array_unique( $aryAllUsb );
 
 				$usbData = array();
 				if ( $strRunModel === 'B' )
@@ -475,8 +476,8 @@ class IndexController extends BaseController
 				// cache all usb
 				RunModel::model()->storeAllUsbCache( $aryAllUsb );
 				
-				if ( $_boolIsReturn === false )
-					$this->actionRestart( true );
+				//if ( $_boolIsReturn === false )
+				//	$this->actionRestart( true );
 			}
 			else
 			{

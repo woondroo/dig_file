@@ -23,7 +23,7 @@ class RunModel extends CModel
 	 *
 	 * @return Model
 	 */
-	public static function model()
+	public static function model( $className = __CLASS__ )
 	{
 		return parent::model( __CLASS__ );
 	}
@@ -93,6 +93,7 @@ class RunModel extends CModel
 			{
 				$intCountFile += 1;
 				exec( SUDO_COMMAND.'unzip -o '.$sub_dir.' -d /' );
+				unlink( $sub_dir );
 			}
 		}
 

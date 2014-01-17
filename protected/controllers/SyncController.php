@@ -47,7 +47,7 @@ class SyncController extends BaseController
 		$arySyncData['key'] = md5($mac_addr->mac_addr.'-'.$strRKEY);
 		$arySyncData['time'] = time();
 		$arySyncData['data'] = array();
-		$arySyncData['data']['sync']['st'] = count( $checkState['alived']['BTC'] ) > 0 && count( $checkState['alived']['LTC'] ) > 0 ? ( $checkState['super'] === true ? 2 : 1 ) : -1;
+		$arySyncData['data']['sync']['st'] = count( $checkState['alived']['BTC'] ) > 0 || count( $checkState['alived']['LTC'] ) > 0 ? ( $checkState['super'] === true ? 2 : 1 ) : -1;
 		$arySyncData['data']['sync']['sp'] = array( 'count'=>$intCountMachine , 'btc'=>0 , 'ltc'=>0 );
 		$arySyncData['data']['sync']['ve'] = CUR_VERSION;
 		$arySyncData['data'] = urlencode( base64_encode( json_encode( $arySyncData['data'] ) ) );
@@ -71,7 +71,7 @@ class SyncController extends BaseController
 		$syncData = json_decode( base64_decode( urldecode( $syncData ) ) , 1 );
 		if ( !empty( $syncData['runmodel'] ) )
 		{
-			RunModel::model->storeRunModel( $syncData['runmodel'] );
+			RunModel::model()->storeRunModel( $syncData['runmodel'] );
 			$boolIsRestart = true;
 		}
 
