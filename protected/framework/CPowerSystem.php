@@ -11,7 +11,7 @@ class CPowerSystem extends CApplicationComponents
 	/**
 	 * 初始化
 	 */
-	public function init( $_prefix = '' , $_suffix = '' )
+	public function init()
 	{
 		parent::init();
 	}
@@ -24,7 +24,6 @@ class CPowerSystem extends CApplicationComponents
 		@exec( SUDO_COMMAND.'stty -F /dev/ttyATH0 raw speed 9600;'.SUDO_COMMAND.'echo "O(00,05,0)E" > /dev/ttyATH0 &' );
 		usleep( $_intTime );
 		@exec( SUDO_COMMAND.'stty -F /dev/ttyATH0 raw speed 9600;'.SUDO_COMMAND.'echo "O(00,05,1)E" > /dev/ttyATH0 &' );
-		sleep( 5 );
 	}
 
 //end class

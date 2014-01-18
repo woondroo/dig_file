@@ -85,40 +85,6 @@ class IndexController extends BaseController
 	}
 
 	/**
-	 * super mode
-	 */
-	public function actionMode()
-	{
-		// is super mode
-		$intIsSuper = isset( $_GET['s'] ) ? intval( $_GET['s'] ) : 0;
-
-		$aryBTCData = $this->getTarConfig( 'btc' );
-		$aryLTCData = $this->getTarConfig( 'ltc' );
-
-		if ( $intIsSuper === 1 )
-		{
-			$aryBTCData['su'] = 1;
-			$aryLTCData['su'] = 1;
-		}
-		else
-		{
-			$aryBTCData['su'] = 0;
-			$aryLTCData['su'] = 0;
-		}
-
-		// store data
-		unset( $aryBTCData['acc'] );
-		unset( $aryLTCData['acc'] );
-		$aryBTCData['ac'] = implode( ',' , $aryBTCData['ac'] );
-		$aryLTCData['ac'] = implode( ',' , $aryLTCData['ac'] );
-		$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
-		$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
-
-		$this->actionRestart( true );
-		echo '200';exit;
-	}
-
-	/**
 	 * restart program
 	 */
 	public function actionRestart( $_boolIsNoExist = false )
@@ -132,62 +98,30 @@ class IndexController extends BaseController
 		// restart power
 		CPowerSystem::restartPower( 1000000 );
 
-		$redis = $this->getRedis();
-		$usbVal = $redis->readByKey( 'usb.status' );
-		if ( empty( $usbVal ) )
-		{
-			if ( $_boolIsNoExist === false )
-			{
-				echo '500';exit;
-			}
-			else return false;
-		}
-
-		$usbData = json_decode( $usbVal , true );
-		if ( empty( $usbData['BTC'] ) && empty( $usbData['LTC'] ) )
-		{
-			if ( $_boolIsNoExist === false )
-			{
-				echo '200';exit;
-			}
-			else return true;
-		}
-
-		// if B or BL model and no btc or ltc message
-		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) )
-		{
-			if ( empty( $usbData['BTC'] ) || ( empty( $usbData['LTC'] ) && $strRunModel === 'LB' ) )
-				$this->actionUsbstate( true );
-
-			$usbData = json_decode( $redis->readByKey( 'usb.status' ) , 1 );
-		}
-
-		// if L model and no ltc message
-		if ( $strRunModel === 'L' && empty( $usbData['LTC'] ) )
-		{
-			$this->actionUsbstate( true );
-			$usbData = json_decode( $redis->readByKey( 'usb.status' ) , 1 );
-		}
+		$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel );
+		$aryUsb = $aryUsbCache['usb'];
 
 		// if btc machine has restart
-		$aryBTCData = $this->getTarConfig( 'btc' );
-		if ( count( $usbData['BTC'] ) > 0 && in_array( $strRunModel , array( 'B' , 'LB' ) ) )
+		if ( count( $aryUsb ) > 0 && in_array( $strRunModel , array( 'B' , 'LB' ) ) )
 		{
+			$aryBTCData = $this->getTarConfig( 'btc' );
+
 			$aryConfig = $aryBTCData;
 			$aryConfig['ac'] = array_shift( $aryConfig['ac'] );
 			$aryConfig['mode'] = $strRunModel === 'LB' ? 'LB-B' : 'B';
 			$this->restartByUsb( $aryConfig , 'all' , $strRunModel );
 			
 			if ( $strRunModel === 'LB' )
-				sleep( 5 );
+				UsbModel::model()->getUsbChanging( $strRunModel , 2 , 'tty' );
 		}
 
 		// if ltc machine has restart
-		$aryLTCData = $this->getTarConfig( 'ltc' );
-		if ( count( $usbData['LTC'] ) > 0 && in_array( $strRunModel , array( 'L' , 'LB' ) ) )
+		if ( count( $aryUsb ) > 0 && in_array( $strRunModel , array( 'L' , 'LB' ) ) )
 		{
+			$aryLTCData = $this->getTarConfig( 'ltc' );
+
 			$intUids = $aryLTCData['acc'];
-			foreach ( $usbData['LTC'] as $usb )
+			foreach ( $aryUsb as $usb )
 			{
 				$aryConfig = $aryLTCData;
 				if ( $intUids < 1 )
@@ -224,13 +158,13 @@ class IndexController extends BaseController
 
 		// get btc start command
 		if ( in_array( $startModel , array( 'B' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-B' , 'B' ) ) )
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --gridseed-options=baud=115200,freq=".($aryData['su'] == 0 ? '600' : '700').",chips=5,modules=1,usefifo=0 --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --dif --gridseed-options=baud=115200,freq=".($aryData['su'] == 0 ? '600' : '700').",chips=5,modules=1,usefifo=0 --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
 		// get ltc start command
 		else if ( in_array( $startModel , array( 'L' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-L' , 'L' ) ) )
 		{
 			$modelLParam = $startModel === 'L' ? " -G {$_aryUsb} --freq=".($aryData['su'] == 0 ? '600' : '700') : "";
 			$modelLBParam = $startModel === 'LB' ? " --dual" : "";
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']}{$modelLBParam} >/dev/null 2>&1 &";
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} --dif={$_aryUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']}{$modelLBParam} >/dev/null 2>&1 &";
 		}
 
 		exec( $command );
@@ -277,26 +211,22 @@ class IndexController extends BaseController
 	 */
 	public function actionCheck( $_boolIsNoExist = false )
 	{
+		// get run model
+		$strRunModel = RunModel::model()->getRunModel();
+
 		$command = SUDO_COMMAND.'ps'.( SUDO_COMMAND === '' ? '' : ' -x' ).'|grep miner';
 		exec( $command , $output );
 
+		// default null object
 		$alived = array('BTC'=>array(),'LTC'=>array());
 		$died = array('BTC'=>array(),'LTC'=>array());
-
-		$redis = $this->getRedis();
-		$usbVal = $redis->readByKey( 'usb.status' );
-
-		if ( !empty( $usbVal ) )
-			$usbData = json_decode( $usbVal , true );
-		else
-			$usbData = array();
 
 		// Alived machine
 		$alivedLTCUsb = array();
 
-		// If LB model running
-		$allUsbCache = RunModel::model()->getAllUsbCache();
-		$strRunModel = RunModel::model()->getRunModel();
+		// get usb machine and run model
+		$aryUsb = UsbModel::model()->getUsbCheckResult( $strRunModel );
+		$allUsbCache = $aryUsb['usb'];
 
 		$alivedBTC = false;
 		$alivedLTC = false;
@@ -325,7 +255,7 @@ class IndexController extends BaseController
 			preg_match( '/.*\s-G\s(.+?)\s--.*/' , $r , $match_usb );
 
 			// If LTC model only, and usb cannot use
-			if ( !empty( $match_usb[1] ) && !in_array( $match_usb[1] , $usbData['LTC'] ) )
+			if ( !empty( $match_usb[1] ) && !in_array( $match_usb[1] , $allUsbCache ) )
 			{
 				$this->actionShutdown( true , $match_usb[1] );
 				continue;
@@ -360,9 +290,9 @@ class IndexController extends BaseController
 		{
 			$diedUsb = array();
 			$checkLTCUsb = $strRunModel === 'LB' ? $allUsbCache : $alivedLTCUsb;
-			foreach ( $usbData['LTC'] as $usb )
+			foreach ( $checkLTCUsb as $usb )
 			{
-				if ( !in_array( $usb , $diedUsb ) && !in_array( $usb , $checkLTCUsb ) )
+				if ( !in_array( $usb , $diedUsb ) && !in_array( $usb , $alived['LTC'] ) )
 					$diedUsb[] = $usb;
 			}
 			$died['LTC'] = $diedUsb;
@@ -395,18 +325,22 @@ class IndexController extends BaseController
 		// check upgrade file
 		RunModel::model()->checkUpgrade();
 
+		// parse log
+		$this->clearLog();
+
 		// reset usb state
 		$this->actionUsbstate( true );
 
 		// check data
 		$aryData = $this->actionCheck( true );
+
+		// get run model
+		$strRunModel = RunModel::model()->getRunModel();
 		
-		if ( count( $aryData['alived']['BTC'] ) === 0 && count( $aryData['died']['BTC'] ) > 0 )
-		{
+		if ( count( $aryData['alived']['LTC'] ) === 0 && count( $aryData['died']['LTC'] ) > 0 && $strRunModel === 'L' )
 			echo $this->actionRestart( true ) === true ? 1 : -1;
-		}
 		else
-			echo 0;
+			echo 1;
 		exit;
 	}
 
@@ -415,134 +349,97 @@ class IndexController extends BaseController
 	 */
 	public function actionUsbstate( $_boolIsReturn = false )
 	{
-		$redis = $this->getRedis();
-		$usbVal = $redis->readByKey( 'usb.status' );
+		//$redis = $this->getRedis();
+		//$usbVal = $redis->readByKey( 'usb.status' );
 
 		$usbData = array();
+		/*
 		if ( !empty( $usbVal ) )
 		{
 			$usbData = json_decode( $usbVal , true );
 			if ( empty( $usbData['BTC'] ) ) $usbData['BTC'] = array();
 			if ( empty( $usbData['LTC'] ) ) $usbData['LTC'] = array();
 		}
-
-		// find new usb machine
-		exec( SUDO_COMMAND.'ls /dev/*USB*' , $output );
+		*/
 
 		// get run model
 		$strRunModel = RunModel::model()->getRunModel();
-
+		
+		// B model don't support auto restart
 		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) )
 		{
-			$aryAllUsb = RunModel::model()->getAllUsbCache();
-			if ( count( $output ) > 0 )
+			/*
+			$usbData = array();
+			if ( $strRunModel === 'B' )
 			{
-				// get running programe
-				$command = SUDO_COMMAND.'ps'.( SUDO_COMMAND === '' ? '' : ' -x' ).'|grep miner';
-				exec( $command , $grepout );
-
-				// match is programe has running
-				$boolIsNotRun = true;
-				if ( count( $grepout ) )
-				{
-					foreach ( $grepout as $g )
-					{
-						preg_match( '/.*(cgminer).*/' , $r , $match_btc );
-						preg_match( '/.*(minerd).*/' , $r , $match_ltc );
-
-						if ( !empty( $match_btc ) || !empty( $match_ltc ) )
-							$boolIsNotRun = false;
-					}
-				}
-
-				// if not run any programe
-				$aryAllUsb = array_merge( $aryAllUsb , $output );
-				$aryAllUsb = array_unique( $aryAllUsb );
-
-				$usbData = array();
-				if ( $strRunModel === 'B' )
-				{
-					$usbData['BTC'] = $aryAllUsb;
-					$usbData['LTC'] = array();
-				}
-				else if ( $strRunModel === 'LB' )
-				{
-					$usbData['BTC'] = $aryAllUsb;
-					$usbData['LTC'] = $aryAllUsb;
-				}
-
-				// write usb status to cache
-				$redis->writeByKey( 'usb.status' , json_encode( $usbData ) );
-				// cache all usb
-				RunModel::model()->storeAllUsbCache( $aryAllUsb );
-				
-				//if ( $_boolIsReturn === false )
-				//	$this->actionRestart( true );
+				$usbData['BTC'] = $aryAllUsb;
+				$usbData['LTC'] = array();
 			}
-			else
+			else if ( $strRunModel === 'LB' )
 			{
-				$usbData = array();
-				if ( $strRunModel === 'B' )
-				{
-					$usbData['BTC'] = $aryAllUsb;
-					$usbData['LTC'] = array();
-				}
-				else if ( $strRunModel === 'LB' )
-				{
-					$usbData['BTC'] = $aryAllUsb;
-					$usbData['LTC'] = $aryAllUsb;
-				}
-
-				// write usb status to cache
-				$redis->writeByKey( 'usb.status' , json_encode( $usbData ) );
+				$usbData['BTC'] = $aryAllUsb;
+				$usbData['LTC'] = $aryAllUsb;
 			}
 
-			$usbData = $aryAllUsb;
+			// write usb status to cache
+			$redis->writeByKey( 'usb.status' , json_encode( $usbData ) );
+			*/
 		}
-		else
+		else if ( $strRunModel === 'L' )
 		{
-			$aryCacheUsb = RunModel::model()->getAllUsbCache();
+			// find new usb machine
+			$aryUsbCache = UsbModel::model()->getUsbCheckResult( $strRunModel );
+			$aryUsb = $aryUsbCache['usb'];
 
-			if ( count( $output ) > 0 )
+			// get running programe
+			$command = SUDO_COMMAND.'ps'.( SUDO_COMMAND === '' ? '' : ' -x' ).'|grep miner';
+			exec( $command , $grepout );
+
+			$alivedProcess = array();
+			foreach ( $grepout as $r )
 			{
-				$newUsbData = array('BTC'=>array(),'LTC'=>array());
-				foreach ( $usbData['LTC'] as $usb )
-				{
-					if ( in_array( $usb , $output ) )
-						$newUsbData['LTC'][] = $usb;
-				}
-				$usbData = $newUsbData;
-
-				$aryNewMachine = array();
-				foreach ( $output as $r )
-				{
-					if ( !in_array( $r , $usbData['LTC'] ) )
-					{
-						$usbData['LTC'][] = $r;
-						$aryNewMachine[] = $r;
-					}
-				}
-
-				$redis->writeByKey( 'usb.status' , json_encode( $usbData ) );
-
-				if ( count( $aryNewMachine ) > 0 )
-				{
-					foreach ( $aryNewMachine as $usb )
-						$this->actionRestartTarget( $usb , 'L' , true );
-				}
-
-				if ( count( $usbData['BTC'] ) === 0 && count( $usbData['LTC'] ) === 0 )
-					$this->actionShutdown( true );
-				}
-			else
-			{
-				$usbData = array( 'BTC'=>array() , 'LTC'=>$aryCacheUsb );
-				$redis->writeByKey( 'usb.status' , json_encode( $usbData ) );
+				preg_match( '/.*-G\s(.+?)\s--.*/' , $r , $match_usb );
+				if ( !empty( $match_usb[1] ) )
+					$alivedProcess[] = $match_usb[1];
 			}
+
+			$newUsbData = array('BTC'=>array(),'LTC'=>array());
+			foreach ( $alivedProcess as $usb )
+			{
+				// if usb and process alived
+				if ( in_array( $usb , $aryUsb ) )
+					$newUsbData['LTC'][] = $usb;
+				// if usb not alive,but process alived
+				else 
+					$this->actionShutdown( true , $usb );
+			}
+			$usbData = $newUsbData;
+
+			$aryNewMachine = array();
+			foreach ( $aryUsb as $r )
+			{
+				if ( !in_array( $r , $usbData['LTC'] ) )
+				{
+					$usbData['LTC'][] = $r;
+					$aryNewMachine[] = $r;
+				}
+			}
+
+			if ( count( $aryNewMachine ) > 0 )
+			{
+				foreach ( $aryNewMachine as $usb )
+					$this->actionRestartTarget( $usb , 'ltc' , 'L' , true );
+			}
+
+			if ( count( $usbData['LTC'] ) === 0 )
+				$this->actionShutdown( true );
 		}
 
 		if ( $_boolIsReturn === false )
+		{
 			echo json_encode( $usbData );
+			exit;
+		}
 		else
 			return $usbData;
 	}
@@ -550,7 +447,7 @@ class IndexController extends BaseController
 	/**
 	 * restart target usb
 	 */
-	public function actionRestartTarget( $_strUsb = '' , $_strTo = '' , $_boolIsNoExist = false )
+	public function actionRestartTarget( $_strUsb = '' , $_strModel = '' , $_strTo = '' , $_boolIsNoExist = false )
 	{
 		$setUsbKey = $_strUsb;
 
@@ -563,10 +460,11 @@ class IndexController extends BaseController
 		}
 
 		// get config
-		$aryConfig = $this->getTarConfig( $_strTo );
+		$aryConfig = $this->getTarConfig( $_strModel );
 		$aryConfig['ac'] = $aryConfig['ac'][rand(0,$aryConfig['acc']-1)];
+		$aryConfig['mode'] = $_strTo;
 
-		$this->restartByUsb( $aryConfig , $setUsbKey , $_strTo );
+		$this->restartByUsb( $aryConfig , $setUsbKey , $_strTo , $setUsbKey );
 
 		if ( $_boolIsNoExist === true )
 				return true;
@@ -666,6 +564,156 @@ class IndexController extends BaseController
 	public function getUsbTarUser()
 	{
 		
+	}
+
+	/**
+	 * clear log
+	 */
+	public function clearLog()
+	{
+		$strRunModel = RunModel::model()->getRunModel();
+		$aryUsbCache = UsbModel::model()->getUsbCheckResult( $strRunModel );
+		$aryUsb = $aryUsbCache['usb'];
+
+		$redis = $this->getRedis();
+		$speedLog = $redis->readByKey( 'speed.log' );
+		$speedData = json_decode( $speedLog , 1 );
+
+		// array( 'BTC'=>array('A'=>100,'R'=>2,'T'=>123456),'LTC'=>array('/dev/ttyUSB0'=>array('A'=>100,'R'=>2,'T'=>123456)) )
+		if ( empty( $speedLog ) )
+			$speedData = array();
+
+		// every 30 second clear
+		$now = time();
+		if ( !empty( $speedData['lastlog'] ) && $now - $speedData['lastlog'] < 30 )
+			return false;
+
+		$newData = array('BTC'=>array(),'LTC'=>array());
+		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) ) $newData['BTC'] = $speedData['BTC'];
+
+		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) )
+		{
+			foreach ( $speedData as $k=>$d )
+			{
+				if ( in_array( $k , $aryUsb ) )
+					$newData['LTC'][$k] = $d;
+			}
+		}
+
+		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) )
+		{
+			foreach ( $aryUsb as $usb )
+			{
+				if ( !array_key_exists( $usb , $newData ) )
+					$newData['LTC'][$usb] = array( 'A'=>0 , 'R'=>0 , 'T'=>$now );
+			}
+		}
+
+		$log_dir = '/tmp';
+		$btc_log_dir = $log_dir.'/btc';
+		$ltc_log_dir = $log_dir.'/ltc';
+
+		$boolIsNeedRestart = false;
+		
+		$btc_dir_source = opendir( $btc_log_dir );
+		$btc_need_check_time = false;
+		while ( ( $file  = readdir( $btc_dir_source ) ) !== false )
+		{
+			// 获得子目录
+			$sub_dir = $btc_log_dir.DIRECTORY_SEPARATOR.$file;
+			if ( $file == '.' || $file == '..' )
+				continue;
+			else
+			{
+				$val = file_get_contents( $sub_dir );
+				$valData = explode( '|', $val );
+				
+				if ( $valData[2] == 'A' )
+					$newData['BTC']['A'] ++;
+				else if ( $valData['2'] == 'R' )
+					$newData['BTC']['R'] ++;
+
+				//if ( intval( $valData[1] ) > $newData['BTC']['T'] )
+					$newData['BTC']['T'] = time();
+
+				// hard
+				// $valData['3']
+				// machine
+				// $valData['0']
+
+				unlink( $sub_dir );
+				$btc_need_check_time = true;
+			}
+		}
+
+		// is need restart
+		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) && $btc_need_check_time )
+			if ( $now - $newData['BTC']['T'] > 600 )
+				$boolIsNeedRestart = true;
+
+		$ltc_dir_source = opendir( $ltc_log_dir );
+		$ltc_need_check_time = false;
+		while ( ( $file  = readdir( $ltc_dir_source ) ) !== false )
+		{
+			// 获得子目录
+			$sub_dir = $ltc_log_dir.DIRECTORY_SEPARATOR.$file;
+			if ( $file == '.' || $file == '..' )
+				continue;
+			else
+			{
+				$val = file_get_contents( $sub_dir );
+				$valData = explode( '|', $val );
+
+				// machine id
+				$id = $valData[0];
+				if ( !array_key_exists( $id , $newData['LTC'] ) )
+				{
+					unlink( $sub_dir );
+					continue;
+				}
+				
+				if ( $valData[2] == 'A' )
+					$newData['LTC'][$id]['A'] ++;
+				else if ( $valData['2'] == 'R' )
+					$newData['LTC'][$id]['R'] ++;
+
+				//if ( intval( $valData[1] ) > $newData['LTC'][$id]['T'] )
+					$newData['LTC'][$id]['T'] = time();
+
+				// hard
+				// $valData['3']
+
+				unlink( $sub_dir );
+				$ltc_need_check_time = true;
+			}
+		}
+
+		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) && $ltc_need_check_time )
+		{
+			foreach ( $newData['LTC'] as $m )
+			{
+				if ( $now - $m['T'] > 600 )
+				{
+					$boolIsNeedRestart = true;
+					break;
+				}
+			}
+		}
+
+		if ( empty( $speedData['lastlog'] ) )
+			$boolIsNeedRestart = false;
+
+		// store clear time stamp
+		$newData['lastlog'] = $now;
+
+		// write log
+		$redis->writeByKey( 'speed.log' , json_encode( $newData , 1 ) );
+
+		// if need restart
+		if ( $boolIsNeedRestart === true )
+			$this->actionRestart( true );
+
+		return true;
 	}
 
 //end class
