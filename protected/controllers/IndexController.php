@@ -577,6 +577,7 @@ class IndexController extends BaseController
 
 		$redis = $this->getRedis();
 		$speedLog = $redis->readByKey( 'speed.log' );
+
 		$speedData = json_decode( $speedLog , 1 );
 
 		// array( 'BTC'=>array('A'=>100,'R'=>2,'T'=>123456),'LTC'=>array('/dev/ttyUSB0'=>array('A'=>100,'R'=>2,'T'=>123456)) )
@@ -593,7 +594,7 @@ class IndexController extends BaseController
 
 		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) )
 		{
-			foreach ( $speedData as $k=>$d )
+			foreach ( $speedData['LTC'] as $k=>$d )
 			{
 				if ( in_array( $k , $aryUsb ) )
 					$newData['LTC'][$k] = $d;
@@ -604,7 +605,7 @@ class IndexController extends BaseController
 		{
 			foreach ( $aryUsb as $usb )
 			{
-				if ( !array_key_exists( $usb , $newData ) )
+				if ( !array_key_exists( $usb , $newData['LTC'] ) )
 					$newData['LTC'][$usb] = array( 'A'=>0 , 'R'=>0 , 'T'=>$now );
 			}
 		}
@@ -666,12 +667,13 @@ class IndexController extends BaseController
 
 				// machine id
 				$id = $valData[0];
+
 				if ( !array_key_exists( $id , $newData['LTC'] ) )
 				{
 					unlink( $sub_dir );
 					continue;
 				}
-				
+			
 				if ( $valData[2] == 'A' )
 					$newData['LTC'][$id]['A'] ++;
 				else if ( $valData['2'] == 'R' )

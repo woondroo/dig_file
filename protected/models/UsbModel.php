@@ -47,7 +47,7 @@ class UsbModel extends CModel
 
 			$now = time();
 			// if usb state time out
-			if ( ( $now - $aryUsbCache['time'] > 5 && $aryUsbCache['iswrite'] === 0 && empty( $_strCheckTar ) ) || $_strCheckTar === 'lsusb' )
+			if ( ( $now - $aryUsbCache['time'] > 5 && empty( $aryUsbCache['iswrite']  ) && empty( $_strCheckTar ) ) || $_strCheckTar === 'lsusb' )
 			{
 				$aryUsbCache['iswrite'] = 1;
 				$redis->writeByKey( 'usb.check.result' , json_encode( $aryUsbCache , 1 ) );
