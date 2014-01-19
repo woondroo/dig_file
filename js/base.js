@@ -179,7 +179,7 @@ var actionSuccess = {
 			for ( var i = 0; i < data.alived.BTC.length; i++ )
 			{
 				var usb_set = replaceAll( ':' , '_' , data.alived.BTC[i]+'' );
-				usb_set = replaceAll( '/' , '-' , usb_set );
+				usb_set = replaceAll( '/' , 'OO' , usb_set );
 				eval( 'btc_machine.B'+usb_set+' = 1;' );
 				btc_data.count ++;
 			}
@@ -187,7 +187,7 @@ var actionSuccess = {
 			for ( var i = 0; i < data.alived.LTC.length; i++ )
 			{
 				var usb_set = replaceAll( ':' , '_' , data.alived.LTC[i]+'' );
-				usb_set = replaceAll( '/' , '-' , usb_set );
+				usb_set = replaceAll( '/' , 'OO' , usb_set );
 				eval( 'ltc_machine.L'+usb_set+' = 1;' );
 				ltc_data.count ++;
 			}
@@ -199,7 +199,7 @@ var actionSuccess = {
 			for ( var i = 0; i < data.died.BTC.length; i++ )
 			{
 				var usb_set = replaceAll( ':' , '_' , data.died.BTC[i]+'' );
-				usb_set = replaceAll( '/' , '-' , usb_set );
+				usb_set = replaceAll( '/' , 'OO' , usb_set );
 				eval( 'btc_machine.B'+usb_set+' = -1;' );
 				btc_data.count ++;
 			}
@@ -207,7 +207,7 @@ var actionSuccess = {
 			for ( var i = 0; i < data.died.LTC.length; i++ )
 			{
 				var usb_set = replaceAll( ':' , '_' , data.died.LTC[i]+'' );
-				usb_set = replaceAll( '/' , '-' , usb_set );
+				usb_set = replaceAll( '/' , 'OO' , usb_set );
 				eval( 'ltc_machine.L'+usb_set+' = -1;' );
 				ltc_data.count ++;
 			}
@@ -230,7 +230,7 @@ var actionSuccess = {
 			for ( var key in btc_machine )
 			{
 				var key_set = replaceAll( '_' , ':' , key );
-				key_set = replaceAll( '-' , '/' , key_set );
+				key_set = replaceAll( 'OO' , '/' , key_set );
 				if ( btc_data.circle === 0 )
 					html_btc += '<div class="col-sm-4">';
 
@@ -269,7 +269,7 @@ var actionSuccess = {
 			for ( var key in ltc_machine )
 			{
 				var key_set = replaceAll( '_' , ':' , key );
-				key_set = replaceAll( '-' , '/' , key_set );
+				key_set = replaceAll( 'OO' , '/' , key_set );
 				if ( ltc_data.circle === 0 )
 					html_ltc += '<div class="col-sm-4">';
 
