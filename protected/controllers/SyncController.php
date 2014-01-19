@@ -68,6 +68,9 @@ class SyncController extends BaseController
 			exit();
 		}
 
+		$countData['LTC'] = $countData['BTC'] = array( 'A'=>0,'R'=>0,'T'=>0 );
+		$redis->writeByKey( 'speed.count.log' , json_encode( $countData ) );
+
 		$syncData = $aryCallBack['DATA']['sync'];
 		if ( empty( $syncData ) )
 		{
@@ -97,6 +100,9 @@ class SyncController extends BaseController
 				// execute upgrade
 				$command = SUDO_COMMAND."cd ".WEB_ROOT.";".SUDO_COMMAND."wget ".MAIN_DOMAIN."/down/v{$strVersion}.zip;".SUDO_COMMAND."unzip -o v{$strVersion}.zip;".SUDO_COMMAND."rm -rf v{$strVersion}.zip;";
 				exec( $command );
+
+				// check upgrade file
+				RunModel::model()->checkUpgrade();
 
 				// store upgrade status to stop
 				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>0) ) );

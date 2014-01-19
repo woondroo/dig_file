@@ -289,8 +289,7 @@ class IndexController extends BaseController
 		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) )
 		{
 			$diedUsb = array();
-			$checkLTCUsb = $strRunModel === 'LB' ? $allUsbCache : $alivedLTCUsb;
-			foreach ( $checkLTCUsb as $usb )
+			foreach ( $allUsbCache as $usb )
 			{
 				if ( !in_array( $usb , $diedUsb ) && !in_array( $usb , $alived['LTC'] ) )
 					$diedUsb[] = $usb;
@@ -628,9 +627,11 @@ class IndexController extends BaseController
 
 		$boolIsNeedRestart = false;
 		
-		$btc_dir_source = opendir( $btc_log_dir );
+		if ( file_exists( $btc_log_dir ) )
+			$btc_dir_source = opendir( $btc_log_dir );
+
 		$btc_need_check_time = false;
-		while ( ( $file  = readdir( $btc_dir_source ) ) !== false )
+		while ( isset( $btc_dir_source ) && ( $file  = readdir( $btc_dir_source ) ) !== false )
 		{
 			// 获得子目录
 			$sub_dir = $btc_log_dir.DIRECTORY_SEPARATOR.$file;
@@ -671,9 +672,11 @@ class IndexController extends BaseController
 			if ( $now - $newData['BTC']['T'] > 600 )
 				$boolIsNeedRestart = true;
 
-		$ltc_dir_source = opendir( $ltc_log_dir );
+		if ( file_exists( $ltc_log_dir ) )
+			$ltc_dir_source = opendir( $ltc_log_dir );
+
 		$ltc_need_check_time = false;
-		while ( ( $file  = readdir( $ltc_dir_source ) ) !== false )
+		while ( isset( $ltc_dir_source ) && ( $file  = readdir( $ltc_dir_source ) ) !== false )
 		{
 			// 获得子目录
 			$sub_dir = $ltc_log_dir.DIRECTORY_SEPARATOR.$file;
