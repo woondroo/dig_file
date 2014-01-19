@@ -29,6 +29,7 @@ class SyncController extends BaseController
 	 */
 	public function actionStart()
 	{
+		// generate key
 		$os = DIRECTORY_SEPARATOR=='\\' ? "windows" : "linux";
 		$mac_addr = new CMac( $os );
 
@@ -38,9 +39,15 @@ class SyncController extends BaseController
 			$strRKEY = file_get_contents( WEB_ROOT.'/js/RKEY.TXT' );
 		}
 
+		// init IndexController
 		$indexController = new IndexController();
 		$checkState = $indexController->actionCheck( true );
 
+		// init cache
+		$redis = $this->getRedis();
+		$countData = json_decode( $redis->readByKey( 'speed.count.log' ) , 1 );
+
+		// get alived machine count
 		$intCountMachine = max( count( $checkState['alived']['BTC'] )+count( $checkState['died']['BTC'] ) , count( $checkState['alived']['LTC'] )+count( $checkState['died']['LTC'] ) );
 
 		$arySyncData = array();
@@ -49,6 +56,7 @@ class SyncController extends BaseController
 		$arySyncData['data'] = array();
 		$arySyncData['data']['sync']['st'] = count( $checkState['alived']['BTC'] ) > 0 || count( $checkState['alived']['LTC'] ) > 0 ? ( $checkState['super'] === true ? 2 : 1 ) : -1;
 		$arySyncData['data']['sync']['sp'] = array( 'count'=>$intCountMachine , 'btc'=>0 , 'ltc'=>0 );
+		$arySyncData['data']['sync']['ar'] = $countData;
 		$arySyncData['data']['sync']['ve'] = CUR_VERSION;
 		$arySyncData['data'] = urlencode( base64_encode( json_encode( $arySyncData['data'] ) ) );
 
@@ -80,12 +88,18 @@ class SyncController extends BaseController
 			$strVersion = $syncData['upgrade'];
 			if ( !empty( $strVersion ) && $strVersion > CUR_VERSION )
 			{
+				// store upgrade status to running
+				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>1) ) );
+
 				$boolIsRestart = true;
 				$indexController->actionShutdown(true);				
 
 				// execute upgrade
 				$command = SUDO_COMMAND."cd ".WEB_ROOT.";".SUDO_COMMAND."wget ".MAIN_DOMAIN."/down/v{$strVersion}.zip;".SUDO_COMMAND."unzip -o v{$strVersion}.zip;".SUDO_COMMAND."rm -rf v{$strVersion}.zip;";
 				exec( $command );
+
+				// store upgrade status to stop
+				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>0) ) );
 			}
 		}
 
@@ -108,7 +122,6 @@ class SyncController extends BaseController
 			$aryLTCData['su'] = isset( $aryConfig['super_ltc'] ) ? $aryConfig['super_ltc'] : 1;
 
 			// store data
-			$redis = $this->getRedis();
 			$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
 			$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
 		}

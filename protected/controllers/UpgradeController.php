@@ -27,59 +27,6 @@ class UpgradeController extends BaseController
 	}
 
 	/**
-	 * Check version method
-	 */
-/*
-	public function actionCheckversion()
-	{
-		// get client version
-		$strVersion = isset( $_REQUEST['version'] ) ? htmlspecialchars( trim( $_REQUEST['version'] ) ) : '';
-
-		// get timestamp
-		$timestamp = isset( $_REQUEST['time'] ) ? intval( trim( $_REQUEST['time'] ) ) : 0;
-
-		// get sign
-		$sign = isset( $_REQUEST['sign'] ) ? htmlspecialchars( trim( $_REQUEST['sign'] ) ) : '';
-
-		$isok = 0;
-		$data = array();
-		$msg = "";
-		try
-		{
-			$aryData = array();
-			$aryData['version'] = $strVersion;
-			$aryData['time'] = $timestamp;
-			// check sign
-			if( !CApi::verifySign( $aryData , $sign , MAIN_DOMAIN_KEY ) )
-				throw new CModelException( "签名认证失败" );
-
-			if ( $strVersion < MAIN_DOMAIN )
-			{
-				$isok = 1;
-				$msg = "有新版本可更新！";
-			}
-			else
-			{
-				$isok = 2;
-				$msg = "暂无新版本！";
-			}
-		}
-		catch ( CModelException $e )
-		{
-			$msg = $e->getMessage();
-		}
-		catch ( CException $e )
-		{
-			$msg = NBT_DEBUG ? $e->getMessage() : '系统错误';
-		}
-
-		header('Content-Type: text/html; charset=utf-8');
-		echo $this->encodeAjaxData( $isok , $data , $msg );
-		exit();
-	}
-*/
-
-	/**
 	 * Check is has new version method
 	 */
 	public function actionHasnew( $_boolIsExit = false )

@@ -322,6 +322,15 @@ class IndexController extends BaseController
 	 */
 	public function actionCheckrun()
 	{
+		$redis = $this->getRedis();
+		$upstatus = json_decode( $redis->readByKey( 'upgrade.run.status' ) , 1 );
+
+		if ( $upstatus['status'] == 1 )
+		{
+			echo '0';
+			exit;
+		}
+		
 		// check upgrade file
 		RunModel::model()->checkUpgrade();
 
@@ -337,7 +346,10 @@ class IndexController extends BaseController
 		// get run model
 		$strRunModel = RunModel::model()->getRunModel();
 		
-		if ( count( $aryData['alived']['LTC'] ) === 0 && count( $aryData['died']['LTC'] ) > 0 && $strRunModel === 'L' )
+		// if need restart
+		if ( count( $aryData['alived']['LTC'] ) === 0 
+				&& count( $aryData['died']['LTC'] ) > 0 
+				&& $strRunModel === 'L' )
 			echo $this->actionRestart( true ) === true ? 1 : -1;
 		else
 			echo 1;
@@ -353,14 +365,6 @@ class IndexController extends BaseController
 		//$usbVal = $redis->readByKey( 'usb.status' );
 
 		$usbData = array();
-		/*
-		if ( !empty( $usbVal ) )
-		{
-			$usbData = json_decode( $usbVal , true );
-			if ( empty( $usbData['BTC'] ) ) $usbData['BTC'] = array();
-			if ( empty( $usbData['LTC'] ) ) $usbData['LTC'] = array();
-		}
-		*/
 
 		// get run model
 		$strRunModel = RunModel::model()->getRunModel();
@@ -577,12 +581,19 @@ class IndexController extends BaseController
 
 		$redis = $this->getRedis();
 		$speedLog = $redis->readByKey( 'speed.log' );
+		$countLog = $redis->readByKey( 'speed.count.log' );
 
 		$speedData = json_decode( $speedLog , 1 );
+		$countData = json_decode( $countLog , 1 );
 
 		// array( 'BTC'=>array('A'=>100,'R'=>2,'T'=>123456),'LTC'=>array('/dev/ttyUSB0'=>array('A'=>100,'R'=>2,'T'=>123456)) )
-		if ( empty( $speedLog ) )
-			$speedData = array();
+		if ( empty( $speedLog ) || empty( $speedData ) )
+			$speedData = array('BTC'=>array(),'LTC'=>array());
+		if ( empty( $countLog ) || empty( $countData ) )
+			$countData = array(
+					'BTC'=>array('A'=>0,'R'=>0,'T'=>time()),
+					'LTC'=>array('A'=>0,'R'=>0,'T'=>time())
+					);
 
 		// every 30 second clear
 		$now = time();
@@ -590,7 +601,8 @@ class IndexController extends BaseController
 			return false;
 
 		$newData = array('BTC'=>array(),'LTC'=>array());
-		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) ) $newData['BTC'] = $speedData['BTC'];
+		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) )
+			$newData['BTC'] = $speedData['BTC'];
 
 		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) )
 		{
@@ -630,12 +642,19 @@ class IndexController extends BaseController
 				$valData = explode( '|', $val );
 				
 				if ( $valData[2] == 'A' )
+				{
 					$newData['BTC']['A'] ++;
+					$countData['BTC']['A'] ++;
+				}
 				else if ( $valData['2'] == 'R' )
+				{
 					$newData['BTC']['R'] ++;
+					$countData['BTC']['R'] ++;
+				}
 
 				//if ( intval( $valData[1] ) > $newData['BTC']['T'] )
-					$newData['BTC']['T'] = time();
+				$newData['BTC']['T'] = time();
+				$countData['BTC']['T'] = time();
 
 				// hard
 				// $valData['3']
@@ -675,12 +694,19 @@ class IndexController extends BaseController
 				}
 			
 				if ( $valData[2] == 'A' )
+				{
 					$newData['LTC'][$id]['A'] ++;
+					$countData['LTC']['A'] ++;
+				}
 				else if ( $valData['2'] == 'R' )
+				{
 					$newData['LTC'][$id]['R'] ++;
+					$countData['LTC']['R'] ++;
+				}
 
 				//if ( intval( $valData[1] ) > $newData['LTC'][$id]['T'] )
-					$newData['LTC'][$id]['T'] = time();
+				$newData['LTC'][$id]['T'] = time();
+				$countData['LTC']['T'] = time();
 
 				// hard
 				// $valData['3']
@@ -706,10 +732,11 @@ class IndexController extends BaseController
 			$boolIsNeedRestart = false;
 
 		// store clear time stamp
-		$newData['lastlog'] = $now;
+		$newData['lastlog'] = $now+300;
 
 		// write log
 		$redis->writeByKey( 'speed.log' , json_encode( $newData , 1 ) );
+		$redis->writeByKey( 'speed.count.log' , json_encode( $countData , 1 ) );
 
 		// if need restart
 		if ( $boolIsNeedRestart === true )
