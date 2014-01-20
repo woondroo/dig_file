@@ -92,7 +92,7 @@ class SyncController extends BaseController
 			if ( !empty( $strVersion ) && $strVersion > CUR_VERSION )
 			{
 				// store upgrade status to running
-				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>1) ) );
+				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>1,'time'=>time()) ) );
 
 				$boolIsRestart = true;
 				$indexController->actionShutdown(true);				
@@ -105,7 +105,7 @@ class SyncController extends BaseController
 				RunModel::model()->checkUpgrade();
 
 				// store upgrade status to stop
-				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>0) ) );
+				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>0,'time'=>time()) ) );
 			}
 		}
 

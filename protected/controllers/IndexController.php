@@ -89,6 +89,27 @@ class IndexController extends BaseController
 	 */
 	public function actionRestart( $_boolIsNoExist = false )
 	{
+		$redis = $this->getRedis();
+		$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
+
+		if ( empty( $restartData ) )
+			$restartData = array( 'status'=>0 );
+
+		if ( $restartData['status'] === 1 )
+		{
+			if ( $_boolIsNoExist === true )
+				return false;
+			else
+			{
+				echo '0';
+				exit;
+			}
+		}
+
+		// set restart status
+		$restartData['status'] = 1;
+		$redis->writeByKey( 'restart.status' , json_encode( $restartData ) );
+
 		// get run model
 		$strRunModel = RunModel::model()->getRunModel();
 
@@ -134,6 +155,9 @@ class IndexController extends BaseController
 				$intUids --;
 			}
 		}
+
+		$restartData['status'] = 0;
+		$redis->writeByKey( 'restart.status' , json_encode( $restartData ) );
 
 		if ( $_boolIsNoExist === false )
 		{
@@ -324,14 +348,15 @@ class IndexController extends BaseController
 		$redis = $this->getRedis();
 		$upstatus = json_decode( $redis->readByKey( 'upgrade.run.status' ) , 1 );
 
-		if ( $upstatus['status'] == 1 )
+		if ( $upstatus['status'] === 1 && !empty( $upstatus['time'] ) && time() - $upstatus['time'] < 60 )
 		{
 			echo '0';
 			exit;
 		}
 		
 		// check upgrade file
-		RunModel::model()->checkUpgrade();
+		if ( $upstatus['status'] === 0 )
+			RunModel::model()->checkUpgrade();
 
 		// parse log
 		$this->clearLog();
@@ -344,6 +369,12 @@ class IndexController extends BaseController
 
 		// get run model
 		$strRunModel = RunModel::model()->getRunModel();
+
+		if ( empty( $upstatus['time'] ) || time() - $upstatus['time'] < 60 )
+		{
+			$upstatus = array( 'status'=>0 , 'time'=>time() );
+			$redis->writeByKey( 'upgrade.run.status' , json_encode( $upstatus ) );
+		}
 		
 		// if need restart
 		if ( count( $aryData['alived']['LTC'] ) === 0 
@@ -428,11 +459,13 @@ class IndexController extends BaseController
 				}
 			}
 
+/*
 			if ( count( $aryNewMachine ) > 0 )
 			{
 				foreach ( $aryNewMachine as $usb )
 					$this->actionRestartTarget( $usb , 'ltc' , 'L' , true );
 			}
+*/
 
 			if ( count( $usbData['LTC'] ) === 0 )
 				$this->actionShutdown( true );
