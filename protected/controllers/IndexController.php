@@ -85,6 +85,39 @@ class IndexController extends BaseController
 	}
 
 	/**
+	 * super mode
+	 */
+	public function actionMode()
+	{
+		// is super mode
+		$intIsSuper = isset( $_GET['s'] ) ? intval( $_GET['s'] ) : 0;
+
+		$redis = $this->getRedis();
+		$btcVal = $redis->readByKey( 'btc.setting' );
+		$ltcVal = $redis->readByKey( 'ltc.setting' );
+		$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
+		$aryLTCData = empty( $ltcVal ) ? array() : json_decode( $ltcVal , true );
+
+		if ( $intIsSuper === 1 )
+		{
+			$aryBTCData['su'] = 1;
+			$aryLTCData['su'] = 1;
+		}
+		else
+		{
+			$aryBTCData['su'] = 0;
+			$aryLTCData['su'] = 0;
+		}
+
+		// store data
+		$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
+		$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
+
+		$this->actionRestart( true );
+		echo '200';exit;
+	}
+
+	/**
 	 * restart program
 	 */
 	public function actionRestart( $_boolIsNoExist = false )
@@ -93,9 +126,9 @@ class IndexController extends BaseController
 		$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
 
 		if ( empty( $restartData ) )
-			$restartData = array( 'status'=>0 );
+			$restartData = array( 'status'=>0 , 'time'=>0 );
 
-		if ( $restartData['status'] === 1 )
+		if ( $restartData['status'] === 1 && !empty( $restartData['time'] ) && time() - $restartData['time'] < 60 )
 		{
 			if ( $_boolIsNoExist === true )
 				return false;
@@ -107,7 +140,7 @@ class IndexController extends BaseController
 		}
 
 		// set restart status
-		$restartData['status'] = 1;
+		$restartData = array( 'status'=>1 , 'time'=>time() );
 		$redis->writeByKey( 'restart.status' , json_encode( $restartData ) );
 
 		// get run model
@@ -156,7 +189,7 @@ class IndexController extends BaseController
 			}
 		}
 
-		$restartData['status'] = 0;
+		$restartData = array( 'status'=>0 , 'time'=>time() );
 		$redis->writeByKey( 'restart.status' , json_encode( $restartData ) );
 
 		if ( $_boolIsNoExist === false )

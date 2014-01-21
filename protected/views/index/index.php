@@ -20,7 +20,7 @@ $aryStatus = array( 'success'=>'alert-success' , 'warning'=>'alert-warning' , 'e
       <div class="input-area">
 	    <div>BTC设置 (不填写则不启动)</div>
         <input class="form-control" placeholder="BTC矿池地址" name="address_btc" value="<?php echo $btc['ad']; ?>" type="text" <?php echo empty($btc['ad']) ? 'autofocus' : ''; ?>/>
-        <input class="form-control" placeholder="BTC矿工号 (多个请用 英文半角',' 隔开)" name="account_btc" value="<?php echo $btc['ac']; ?>" type="text" />
+        <input class="form-control" placeholder="BTC矿工号 (一个即可，多个矿工默认第一个)" name="account_btc" value="<?php echo $btc['ac']; ?>" type="text" />
         <input class="form-control" placeholder="BTC矿工密码" name="password_btc" value="<?php echo $btc['pw']; ?>" type="text" />
 
 		<div>LTC设置 (不填写则不启动)</div>

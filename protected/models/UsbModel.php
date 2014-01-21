@@ -37,17 +37,20 @@ class UsbModel extends CModel
 		if ( empty( $_strRunModel ) )
 			return array();
 
-		if ( in_array( $_strRunModel , array( 'B' , 'LB' ) ) )
+		if ( ( in_array( $_strRunModel , array( 'B' , 'LB' ) ) && empty( $_strCheckTar ) ) || $_strCheckTar === 'lsusb' )
 		{
 			$redis = $this->getRedis();
 			$aryUsbCache = json_decode( $redis->readByKey( 'usb.check.result' ) , 1 );
+			$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
+
+			$blank_time = $restartData['status'] === 1 ? 5 : 30;
 			
 			if ( empty( $aryUsbCache ) )
 				$aryUsbCache = array( 'usb'=>array() , 'time'=>0 , 'iswrite'=>0 );
 
 			$now = time();
 			// if usb state time out
-			if ( ( $now - $aryUsbCache['time'] > 5 && empty( $aryUsbCache['iswrite']  ) && empty( $_strCheckTar ) ) || $_strCheckTar === 'lsusb' )
+			if ( empty( $aryUsbCache['time'] ) || $now - $aryUsbCache['time'] > $blank_time || empty( $aryUsbCache['iswrite'] ) )
 			{
 				$aryUsbCache['iswrite'] = 1;
 				$redis->writeByKey( 'usb.check.result' , json_encode( $aryUsbCache , 1 ) );

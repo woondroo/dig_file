@@ -34,7 +34,7 @@ abstract class CApplication extends CComponents
 	public function __construct($config=null)
 	{
 		Nbt::setApplication($this);
-		session_start();
+		//session_start();
 		$this->initSystemHandlers();	
 		$this->init();
 	}

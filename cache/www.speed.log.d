@@ -1,1 +1,1 @@
-{"BTC":null,"LTC":[],"lastlog":1390216262}
+{"BTC":null,"LTC":[],"lastlog":1390293302}
