@@ -122,6 +122,8 @@ class IndexController extends BaseController
 	 */
 	public function actionRestart( $_boolIsNoExist = false )
 	{
+		ini_set( "max_execution_time" , "300" );
+
 		$redis = $this->getRedis();
 		$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
 
