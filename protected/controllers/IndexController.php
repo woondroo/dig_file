@@ -214,11 +214,21 @@ class IndexController extends BaseController
 			return false;
 
 		// get run level
-		$intRunLevel = $aryData['mode'] === 'LB-B' ? '10' : ($aryData['mode'] === 'L-B' ? '0' : '16');
+		$intRunLevel = $aryData['mode'] === 'LB-B' ? '11' : ($aryData['mode'] === 'L-B' ? '0' : '16');
 
 		// get btc start command
 		if ( in_array( $aryData['mode'] , array( 'LB-B' , 'L-B' , 'B' ) ) )
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --dif --gridseed-options=baud=115200,freq=".($aryData['su'] == 0 ? '600' : '750').",chips=5,modules=1,usefifo=0,btc={$intRunLevel} --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
+		{
+			$aryUsbCache = json_decode( $this->getRedis()->readByKey( 'usb.check.result' ) , 1 );
+			$intRunSpeed = $aryUsbCache['hasgd'] === 0 ? 800 : 700;
+			if ( $aryData['mode'] == 'L-B' && $aryUsbCache['hasgd'] === 0 )
+				$intRunSpeed = 850;
+
+			if ( $aryData['su'] == 0 )
+				$intRunSpeed = 600;
+
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --dif --gridseed-options=baud=115200,freq={$intRunSpeed},chips=5,modules=1,usefifo=0,btc={$intRunLevel} --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
+		}
 		// get ltc start command
 		else if ( in_array( $startModel , array( 'L' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-L' , 'L' ) ) )
 			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} --dif={$_aryUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} --dual >/dev/null 2>&1 &";

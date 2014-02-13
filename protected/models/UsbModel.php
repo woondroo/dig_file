@@ -58,11 +58,13 @@ class UsbModel extends CModel
 				@exec( SUDO_COMMAND.'lsusb' , $output );
 
 				$aryUsb = array();
+				$boolHasGD = false;
 				foreach ( $output as $usb )
 				{
 					preg_match( '/.*Bus\s(\d+)\sDevice\s(\d+).*CP210x.*/' , $usb , $match_usb );
 					if ( !empty( $match_usb[1] ) && !empty( $match_usb[2] ) )
 					{
+						$boolHasGD = true;
 						$strId = intval( $match_usb[1] ).':'.intval( $match_usb[2] );
 						$aryUsb[] = $strId;
 					}
@@ -81,6 +83,7 @@ class UsbModel extends CModel
 				$aryUsbCache['usb'] = $aryUsb;
 				$aryUsbCache['time'] = time();
 				$aryUsbCache['iswrite'] = 0;
+				$aryUsbCache['hasgd'] = $boolHasGD === true ? 1 : 0;
 				$redis->writeByKey( 'usb.check.result' , json_encode( $aryUsbCache , 1 ) );
 			}
 		}
