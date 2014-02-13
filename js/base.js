@@ -387,7 +387,7 @@ function timerResetTopBt()
 	if ( actions.setting.runstate === false ) resetTopBt.check();
 	setTimeout( function(){
 		timerResetTopBt();
-	} , 5000 );
+	} , 10000 );
 }
 
 // replace all matched string

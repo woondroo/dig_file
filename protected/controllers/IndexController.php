@@ -158,17 +158,15 @@ class IndexController extends BaseController
 		$aryUsb = $aryUsbCache['usb'];
 
 		// if btc machine has restart
-		if ( count( $aryUsb ) > 0 && in_array( $strRunModel , array( 'B' , 'LB' ) ) )
+		if ( count( $aryUsb ) > 0 )
 		{
 			$aryBTCData = $this->getTarConfig( 'btc' );
 
 			$aryConfig = $aryBTCData;
 			$aryConfig['ac'] = array_shift( $aryConfig['ac'] );
-			$aryConfig['mode'] = $strRunModel === 'LB' ? 'LB-B' : 'B';
+			$aryConfig['mode'] = $strRunModel === 'LB' ? 'LB-B' : ($strRunModel === 'L' ? 'L-B' : 'B');
 			$this->restartByUsb( $aryConfig , 'all' , $strRunModel );
-			
-			if ( $strRunModel === 'LB' )
-				UsbModel::model()->getUsbChanging( $strRunModel , 2 , 'tty' );
+			sleep( 10 );
 		}
 
 		// if ltc machine has restart
@@ -215,16 +213,15 @@ class IndexController extends BaseController
 		if ( empty( $aryData ) )
 			return false;
 
+		// get run level
+		$intRunLevel = $aryData['mode'] === 'LB-B' ? '10' : ($aryData['mode'] === 'L-B' ? '0' : '16');
+
 		// get btc start command
-		if ( in_array( $startModel , array( 'B' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-B' , 'B' ) ) )
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --dif --gridseed-options=baud=115200,freq=".($aryData['su'] == 0 ? '600' : '700').",chips=5,modules=1,usefifo=0 --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
+		if ( in_array( $aryData['mode'] , array( 'LB-B' , 'L-B' , 'B' ) ) )
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --dif --gridseed-options=baud=115200,freq=".($aryData['su'] == 0 ? '600' : '750').",chips=5,modules=1,usefifo=0,btc={$intRunLevel} --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
 		// get ltc start command
 		else if ( in_array( $startModel , array( 'L' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-L' , 'L' ) ) )
-		{
-			$modelLParam = $startModel === 'L' ? " -G {$_aryUsb} --freq=".($aryData['su'] == 0 ? '600' : '700') : "";
-			$modelLBParam = $startModel === 'LB' ? " --dual" : "";
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} --dif={$_aryUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']}{$modelLBParam} >/dev/null 2>&1 &";
-		}
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} --dif={$_aryUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} --dual >/dev/null 2>&1 &";
 
 		exec( $command );
 		return true;
@@ -311,7 +308,7 @@ class IndexController extends BaseController
 				continue;
 
 			// Match all usb machine
-			preg_match( '/.*\s-G\s(.+?)\s--.*/' , $r , $match_usb );
+			preg_match( '/.*\s--dif=(.+?)\s.*/' , $r , $match_usb );
 
 			// If LTC model only, and usb cannot use
 			if ( !empty( $match_usb[1] ) && !in_array( $match_usb[1] , $allUsbCache ) )
@@ -382,8 +379,10 @@ class IndexController extends BaseController
 	{
 		$redis = $this->getRedis();
 		$upstatus = json_decode( $redis->readByKey( 'upgrade.run.status' ) , 1 );
+		$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
 
-		if ( $upstatus['status'] === 1 && !empty( $upstatus['time'] ) && time() - $upstatus['time'] < 60 )
+		if ( ( $upstatus['status'] === 1 && !empty( $upstatus['time'] ) && time() - $upstatus['time'] < 60 )
+				|| ( $restartData['status'] === 1 && !empty( $restartData['time'] ) && time() - $restartData['time'] < 30 ) )
 		{
 			echo '0';
 			exit;
@@ -415,7 +414,8 @@ class IndexController extends BaseController
 		if ( count( $aryData['alived']['LTC'] ) === 0 
 				&& count( $aryData['died']['LTC'] ) > 0 
 				&& $strRunModel === 'L' )
-			echo $this->actionRestart( true ) === true ? 1 : -1;
+			//echo $this->actionRestart( true ) === true ? 1 : -1;
+			echo 1;
 		else
 			echo 1;
 		exit;
@@ -653,20 +653,20 @@ class IndexController extends BaseController
 		$speedData = json_decode( $speedLog , 1 );
 		$countData = json_decode( $countLog , 1 );
 
+		$now = time();
 		// array( 'BTC'=>array('A'=>100,'R'=>2,'T'=>123456),'LTC'=>array('/dev/ttyUSB0'=>array('A'=>100,'R'=>2,'T'=>123456)) )
 		if ( empty( $speedLog ) || empty( $speedData ) )
 			$speedData = array('BTC'=>array(),'LTC'=>array());
 		if ( empty( $countLog ) || empty( $countData ) )
 			$countData = array(
-					'BTC'=>array('A'=>0,'R'=>0,'T'=>time()),
-					'LTC'=>array('A'=>0,'R'=>0,'T'=>time())
+					'BTC'=>array('A'=>0,'R'=>0,'T'=>time(),'LC'=>$now),
+					'LTC'=>array('A'=>0,'R'=>0,'T'=>time(),'LC'=>$now)
 					);
 
 		// every 30 second clear
-		$now = time();
 		if ( !empty( $speedData['lastlog'] ) && $now - $speedData['lastlog'] < 30 )
 			return false;
-
+		
 		$newData = array('BTC'=>array(),'LTC'=>array());
 		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) )
 			$newData['BTC'] = $speedData['BTC'];
@@ -685,7 +685,7 @@ class IndexController extends BaseController
 			foreach ( $aryUsb as $usb )
 			{
 				if ( !array_key_exists( $usb , $newData['LTC'] ) )
-					$newData['LTC'][$usb] = array( 'A'=>0 , 'R'=>0 , 'T'=>$now );
+					$newData['LTC'][$usb] = array( 'A'=>0 , 'R'=>0 , 'T'=>$now);
 			}
 		}
 
@@ -694,7 +694,7 @@ class IndexController extends BaseController
 		$ltc_log_dir = $log_dir.'/ltc';
 
 		$boolIsNeedRestart = false;
-		
+
 		if ( file_exists( $btc_log_dir ) )
 			$btc_dir_source = opendir( $btc_log_dir );
 
@@ -722,8 +722,8 @@ class IndexController extends BaseController
 				}
 
 				//if ( intval( $valData[1] ) > $newData['BTC']['T'] )
-				$newData['BTC']['T'] = time();
-				$countData['BTC']['T'] = time();
+				$newData['BTC']['T'] = $now;
+				$countData['BTC']['T'] = $now;
 
 				// hard
 				// $valData['3']
@@ -734,9 +734,12 @@ class IndexController extends BaseController
 				$btc_need_check_time = true;
 			}
 		}
+		
+		if ( $btc_need_check_time === true || empty( $countData['BTC']['LC'] ) )
+			$countData['BTC']['LC'] = $now;
 
 		// is need restart
-		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) && $btc_need_check_time )
+		if ( ( in_array( $strRunModel , array( 'B' , 'LB' ) ) && $btc_need_check_time ) || $now - $countData['BTC']['LC'] > 600 )
 			if ( $now - $newData['BTC']['T'] > 600 )
 				$boolIsNeedRestart = true;
 
@@ -776,8 +779,8 @@ class IndexController extends BaseController
 				}
 
 				//if ( intval( $valData[1] ) > $newData['LTC'][$id]['T'] )
-				$newData['LTC'][$id]['T'] = time();
-				$countData['LTC']['T'] = time();
+				$newData['LTC'][$id]['T'] = $now;
+				$countData['LTC']['T'] = $now;
 
 				// hard
 				// $valData['3']
@@ -786,8 +789,12 @@ class IndexController extends BaseController
 				$ltc_need_check_time = true;
 			}
 		}
-
-		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) && $ltc_need_check_time )
+		
+		
+		if ( $ltc_need_check_time === true || empty( $countData['LTC']['LC'] ) )
+			$countData['LTC']['LC'] = $now;
+			
+		if ( ( in_array( $strRunModel , array( 'L' , 'LB' ) ) && $ltc_need_check_time ) || $now - $countData['LTC']['LC'] > 600 )
 		{
 			foreach ( $newData['LTC'] as $m )
 			{
@@ -797,13 +804,16 @@ class IndexController extends BaseController
 					break;
 				}
 			}
+			
+			if ( $boolIsNeedRestart === false && $now - $countData['LTC']['LC'] > 600 )
+				$boolIsNeedRestart = true;
 		}
 
 		if ( empty( $speedData['lastlog'] ) )
 			$boolIsNeedRestart = false;
 
 		// store clear time stamp
-		$newData['lastlog'] = $now+300;
+		$newData['lastlog'] = $now;
 
 		// write log
 		$redis->writeByKey( 'speed.log' , json_encode( $newData , 1 ) );
@@ -811,7 +821,12 @@ class IndexController extends BaseController
 
 		// if need restart
 		if ( $boolIsNeedRestart === true )
+		{
 			$this->actionRestart( true );
+			
+			$newData['lastlog'] = $now+300;
+			$redis->writeByKey( 'speed.log' , json_encode( $newData , 1 ) );
+		}
 
 		return true;
 	}

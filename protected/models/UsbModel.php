@@ -37,7 +37,7 @@ class UsbModel extends CModel
 		if ( empty( $_strRunModel ) )
 			return array();
 
-		if ( ( in_array( $_strRunModel , array( 'B' , 'LB' ) ) && empty( $_strCheckTar ) ) || $_strCheckTar === 'lsusb' )
+		if ( empty( $_strCheckTar ) || $_strCheckTar === 'lsusb' )
 		{
 			$redis = $this->getRedis();
 			$aryUsbCache = json_decode( $redis->readByKey( 'usb.check.result' ) , 1 );
@@ -65,6 +65,15 @@ class UsbModel extends CModel
 					{
 						$strId = intval( $match_usb[1] ).':'.intval( $match_usb[2] );
 						$aryUsb[] = $strId;
+					}
+					else
+					{
+						preg_match( '/.*Bus\s(\d+)\sDevice\s(\d+).*SGS\sThomson\sMicroelectronics.*/' , $usb , $match_usb );
+						if ( !empty( $match_usb[1] ) && !empty( $match_usb[2] ) )
+						{
+							$strId = intval( $match_usb[1] ).':'.intval( $match_usb[2] );
+							$aryUsb[] = $strId;
+						}
 					}
 				}
 
@@ -100,7 +109,8 @@ class UsbModel extends CModel
 		$aryUsbCache = $this->getUsbCheckResult( $_strRunModel , $_strCheckTar );
 		$continue = true;
 
-		$timer = in_array( $_strRunModel , array( 'B' , 'LB' ) ) ? 6 : 2;
+		//$timer = in_array( $_strRunModel , array( 'B' , 'LB' ) ) ? 6 : 2;
+		$timer = 6;
 		if ( $_intSetTimer > 0 )
 			$timer = $_intSetTimer;
 
@@ -112,12 +122,16 @@ class UsbModel extends CModel
 			sleep( 1 );
 			$time_last --;
 
+			$search_time_start = time();
 			$newAryUsbCache = $this->getUsbCheckResult( $_strRunModel , $_strCheckTar );
+			$search_time_end = time();
+
+			$time_last -= floor( $search_time_end - $search_time_start );
 
 			if ( count( $newAryUsbCache['usb'] ) != count( $aryUsbCache['usb'] ) )	
 				$time_last = $timer;
 
-			if ( $time_last === 0 )
+			if ( $time_last < 0 )
 				$continue = false;
 
 			$aryUsbCache = $newAryUsbCache;

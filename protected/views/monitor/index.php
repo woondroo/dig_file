@@ -15,7 +15,7 @@ function refreshState()
 	//if ( actions.setting.runstate === false ) actions.check();
 	setTimeout(function(){
 		refreshState();
-	},5000);
+	},10000);
 }
 $(document).ready(function(){
 	refreshState();

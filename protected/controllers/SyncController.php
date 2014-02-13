@@ -68,7 +68,8 @@ class SyncController extends BaseController
 			exit();
 		}
 
-		$countData['LTC'] = $countData['BTC'] = array( 'A'=>0,'R'=>0,'T'=>0 );
+		$countData['LTC'] = array( 'A'=>0,'R'=>0,'T'=>0,'LC'=>$countData['LTC']['LC'] );
+		$countData['BTC'] = array( 'A'=>0,'R'=>0,'T'=>0,'LC'=>$countData['BTC']['LC'] );
 		$redis->writeByKey( 'speed.count.log' , json_encode( $countData ) );
 
 		$syncData = $aryCallBack['DATA']['sync'];
