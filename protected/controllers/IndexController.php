@@ -749,7 +749,7 @@ class IndexController extends BaseController
 			$countData['BTC']['LC'] = $now;
 
 		// is need restart
-		if ( ( in_array( $strRunModel , array( 'B' , 'LB' ) ) && $btc_need_check_time ) || $now - $countData['BTC']['LC'] > 600 )
+		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) && ( $btc_need_check_time || $now - $countData['BTC']['LC'] > 600 ) )
 			if ( $now - $newData['BTC']['T'] > 600 )
 				$boolIsNeedRestart = true;
 
@@ -804,7 +804,7 @@ class IndexController extends BaseController
 		if ( $ltc_need_check_time === true || empty( $countData['LTC']['LC'] ) )
 			$countData['LTC']['LC'] = $now;
 			
-		if ( ( in_array( $strRunModel , array( 'L' , 'LB' ) ) && $ltc_need_check_time ) || $now - $countData['LTC']['LC'] > 600 )
+		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) && ( $ltc_need_check_time || $now - $countData['LTC']['LC'] > 600 ) )
 		{
 			foreach ( $newData['LTC'] as $m )
 			{

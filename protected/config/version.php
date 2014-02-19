@@ -1,3 +1,3 @@
 <?php
-define( 'CUR_VERSION' , '1.99' );
+define( 'CUR_VERSION' , '2.0.2' );
 ?>
