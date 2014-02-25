@@ -1,10 +1,10 @@
   <div class="page-header">
-	<h1>BTC 运行状态</h1>
+	<h1>SHA 运行状态</h1>
   </div>
   <div id="btc-machine-container" class="row"></div>
 
   <div class="page-header">
-	<h1>LTC 运行状态</h1>
+	<h1>SCRYPT 运行状态</h1>
   </div>
   <div id="ltc-machine-container" class="row"></div>
 <script type="text/javascript">

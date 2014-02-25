@@ -7,13 +7,14 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="<?php echo $this->createUrl( 'index/index' ); ?>">BTC&amp;LTC设置</a>
+      <a class="navbar-brand" href="<?php echo $this->createUrl( 'index/index' ); ?>">WIIBOX设置</a>
     </div>
     
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li<?php echo $this->id == 'index' ? ' class="active"' : '' ?>><a href="<?php echo $this->createUrl( 'index/index' ); ?>">设置中心</a></li>
-        <li<?php echo $this->id == 'monitor' ? ' class="active"' : '' ?>><a href="<?php echo $this->createUrl( 'monitor/index' ); ?>">监控中心</a></li>
+        <li<?php echo $this->id == 'monitor' ? ' class="active"' : '' ?>><a href="<?php echo $this->createUrl( 'monitor/index' ); ?>">本地监控</a></li>
+		<li><a target="_blank" href="http://www.wiibox.net">远程监控</a></li>
       </ul>
 	  <ul id="action-header" class="nav navbar-nav navbar-right">
 	    <li><a href="javascript:;" id="action-restart">立即重启</a></li>

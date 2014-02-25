@@ -28,7 +28,7 @@ class IndexController extends BaseController
 	{
 		try
 		{
-			$this->replaceSeoTitle( 'BTC & LTC 挖矿设置' );
+			$this->replaceSeoTitle( 'WIIBOX 挖矿设置' );
 
 			// open redis
 			$redis = $this->getRedis();

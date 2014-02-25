@@ -20,7 +20,7 @@ class MonitorController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		$this->replaceSeoTitle( 'BTC & LTC 监控中心' );
+		$this->replaceSeoTitle( 'WIIBOX 监控中心' );
 
 		$aryData = array();
 		$this->render( 'index' , $aryData );

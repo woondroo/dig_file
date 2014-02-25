@@ -18,15 +18,15 @@ $aryStatus = array( 'success'=>'alert-success' , 'warning'=>'alert-warning' , 'e
       </script>
       <?php endif; ?>
       <div class="input-area">
-	    <div>BTC设置 (不填写则不启动)</div>
-        <input class="form-control" placeholder="BTC矿池地址" name="address_btc" value="<?php echo $btc['ad']; ?>" type="text" <?php echo empty($btc['ad']) ? 'autofocus' : ''; ?>/>
-        <input class="form-control" placeholder="BTC矿工号 (一个即可，多个矿工默认第一个)" name="account_btc" value="<?php echo $btc['ac']; ?>" type="text" />
-        <input class="form-control" placeholder="BTC矿工密码" name="password_btc" value="<?php echo $btc['pw']; ?>" type="text" />
+	    <div>SHA设置 (不填写则不启动)</div>
+        <input class="form-control" placeholder="SHA矿池地址" name="address_btc" value="<?php echo $btc['ad']; ?>" type="text" <?php echo empty($btc['ad']) ? 'autofocus' : ''; ?>/>
+        <input class="form-control" placeholder="SHA矿工号 (一个即可，多个矿工默认第一个)" name="account_btc" value="<?php echo $btc['ac']; ?>" type="text" />
+        <input class="form-control" placeholder="SHA统一矿工密码" name="password_btc" value="<?php echo $btc['pw']; ?>" type="text" />
 
-		<div>LTC设置 (不填写则不启动)</div>
-        <input class="form-control" placeholder="LTC矿池地址" name="address_ltc" value="<?php echo $ltc['ad']; ?>" type="text" />
-        <input class="form-control" placeholder="LTC矿工号 (多个请用 英文半角',' 隔开)" name="account_ltc" value="<?php echo $ltc['ac']; ?>" type="text" />
-        <input class="form-control" placeholder="LTC矿工密码" name="password_ltc" value="<?php echo $ltc['pw']; ?>" type="text" />
+		<div>SCRYPT设置 (不填写则不启动)</div>
+        <input class="form-control" placeholder="SCRYPT矿池地址" name="address_ltc" value="<?php echo $ltc['ad']; ?>" type="text" />
+        <input class="form-control" placeholder="SCRYPT矿工号 (多个请用 英文半角',' 隔开)" name="account_ltc" value="<?php echo $ltc['ac']; ?>" type="text" />
+        <input class="form-control" placeholder="SCRYPT统一矿工密码" name="password_ltc" value="<?php echo $ltc['pw']; ?>" type="text" />
       </div>
       <p>
         <button class="btn btn-lg btn-primary btn-block" type="submit">保存设置</button>

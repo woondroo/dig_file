@@ -67,13 +67,13 @@ var actions = {
 var actionSuccess = {
 	templates : {
 		// usb-port : /dev/ttyUSB0 , usb-text : 新USB挖矿设备，请选择挖矿模式。
-		newusb : '<div id="newusb-{usb-port}" class="panel panel-primary"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br><br><button type="button" class="btn btn-sm btn-default btn-run-ltc" tar="{usb-port}">运行LTC</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-btc" tar="{usb-port}">运行BTC</button></div></div>',
-		// usb-port : /dev/ttyUSB0 , usb-run-tip-type : default|waining , usb-text : 正在运行BTC [正常]|目标运行BTC [已停止] , usb-restart-text : 重启|立即启动
+		newusb : '<div id="newusb-{usb-port}" class="panel panel-primary"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br><br><button type="button" class="btn btn-sm btn-default btn-run-ltc" tar="{usb-port}">运行SCRYPT</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-btc" tar="{usb-port}">运行SHA</button></div></div>',
+		// usb-port : /dev/ttyUSB0 , usb-run-tip-type : default|waining , usb-text : 正在运行SHA [正常]|目标运行SHA [已停止] , usb-restart-text : 重启|立即启动
 		btcstate : '<div id="btcstate-{usb-port}" class="panel panel-{usb-run-tip-type}"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br></div></div>',
-///<br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-ltc" tar="{usb-port}">运行LTC</button>
-		// usb-port : /dev/ttyUSB0 , usb-run-tip-type : default|waining , usb-text : 正在运行LTC [正常]|目标运行LTC [已停止] , usb-restart-text : 重启|立即启动
+///<br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-ltc" tar="{usb-port}">运行SCRYPT</button>
+		// usb-port : /dev/ttyUSB0 , usb-run-tip-type : default|waining , usb-text : 正在运行SCRYPT [正常]|目标运行SCRYPT [已停止] , usb-restart-text : 重启|立即启动
 		ltcstate : '<div id="ltcstate-{usb-port}" class="panel panel-{usb-run-tip-type}"><div class="panel-heading"><h3 class="panel-title">设备: {usb-port}</h3></div><div class="panel-body">{usb-text}<br></div></div>',
-//<br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-btc" tar="{usb-port}">运行BTC</button>
+//<br><button type="button" class="btn btn-sm btn-danger btn-run-restart" tar="{usb-port}">{usb-restart-text}</button>&nbsp;<button type="button" class="btn btn-sm btn-default btn-run-btc" tar="{usb-port}">运行SHA</button>
 		// data-tip : 还未发现新挖矿设备!|暂无设备运行!
 		nulldata : '<div class="alert alert-success important-tip">{data-tip}</div>'
 	},
@@ -223,7 +223,7 @@ var actionSuccess = {
 		// start btc machine check....
 		if ( Object.keys( btc_machine ).length === 0 || in_array( btc_machine , null_data ) )
 		{
-			html_btc = replaceAll( '{data-tip}' , '暂无BTC设备!' , this.templates.nulldata );
+			html_btc = replaceAll( '{data-tip}' , '暂无SHA设备!' , this.templates.nulldata );
 		}
 		else
 		{
@@ -236,7 +236,7 @@ var actionSuccess = {
 
 				var tmp_str = replaceAll( '{usb-port}' , key_set , this.templates.btcstate );
 				tmp_str = replaceAll( '{usb-run-tip-type}' , btc_machine[key] === 1 ? 'default' : 'warning' , tmp_str );
-				tmp_str = replaceAll( '{usb-text}' , btc_machine[key] === 1 ? '正在运行BTC [正常]' : '目标运行BTC [已停止]' , tmp_str );
+				tmp_str = replaceAll( '{usb-text}' , btc_machine[key] === 1 ? '正在运行SHA [正常]' : '目标运行SHA [已停止]' , tmp_str );
 				//tmp_str = replaceAll( '{usb-restart-text}' , btc_machine[key] === 1 ? '重启' : '立即启动' , tmp_str );
 				html_btc += tmp_str;
 
@@ -262,7 +262,7 @@ var actionSuccess = {
 		// start ltc machine check....
 		if ( Object.keys( ltc_machine ).length === 0 || in_array( ltc_machine , null_data ) )
 		{
-			html_ltc = replaceAll( '{data-tip}' , '暂无LTC设备!' , this.templates.nulldata );
+			html_ltc = replaceAll( '{data-tip}' , '暂无SCRYPT设备!' , this.templates.nulldata );
 		}
 		else
 		{
@@ -275,7 +275,7 @@ var actionSuccess = {
 
 				var tmp_str = replaceAll( '{usb-port}' , key_set , this.templates.ltcstate );
 				tmp_str = replaceAll( '{usb-run-tip-type}' , ltc_machine[key] === 1 ? 'default' : 'warning' , tmp_str );
-				tmp_str = replaceAll( '{usb-text}' , ltc_machine[key] === 1 ? '正在运行LTC [正常]' : '目标运行LTC [已停止]' , tmp_str );
+				tmp_str = replaceAll( '{usb-text}' , ltc_machine[key] === 1 ? '正在运行SCRYPT [正常]' : '目标运行SCRYPT [已停止]' , tmp_str );
 				//tmp_str = replaceAll( '{usb-restart-text}' , ltc_machine[key] === 1 ? '重启' : '立即启动' , tmp_str );
 				html_ltc += tmp_str;
 
