@@ -8,7 +8,7 @@
 <title><?php echo $this->getSeoTitle();?></title>
 
 <link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl;?>/css/bootstrap.min.css"/>
-<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl;?>/css/bootstrap-theme.min.css"/>
+<?php/*<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl;?>/css/bootstrap-theme.min.css"/>*/?>
 <link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl;?>/css/index.css"/>
 <script language="javascript" type="text/javascript">
 	var NBT_DEBUG = <?php echo NBT_DEBUG ? 1 : 0;?>;

@@ -32,6 +32,7 @@ class SyncController extends BaseController
 		// generate key
 		$os = DIRECTORY_SEPARATOR=='\\' ? "windows" : "linux";
 		$mac_addr = new CMac( $os );
+		$ip_addr = new CIp( $os );
 
 		$strRKEY = '';
 		if ( file_exists( WEB_ROOT.'/js/RKEY.TXT' ) )
@@ -47,6 +48,9 @@ class SyncController extends BaseController
 		$redis = $this->getRedis();
 		$countData = json_decode( $redis->readByKey( 'speed.count.log' ) , 1 );
 
+		// get run model
+		$strRunModel = RunModel::model()->getRunModel();
+
 		// get alived machine count
 		$intCountMachine = max( count( $checkState['alived']['BTC'] )+count( $checkState['died']['BTC'] ) , count( $checkState['alived']['LTC'] )+count( $checkState['died']['LTC'] ) );
 
@@ -58,6 +62,8 @@ class SyncController extends BaseController
 		$arySyncData['data']['sync']['sp'] = array( 'count'=>$intCountMachine , 'btc'=>0 , 'ltc'=>0 );
 		$arySyncData['data']['sync']['ar'] = $countData;
 		$arySyncData['data']['sync']['ve'] = CUR_VERSION;
+		$arySyncData['data']['sync']['md'] = $strRunModel;
+		$arySyncData['data']['sync']['ip'] = $ip_addr->ip_addr;
 		$arySyncData['data'] = urlencode( base64_encode( json_encode( $arySyncData['data'] ) ) );
 
 		// sync data

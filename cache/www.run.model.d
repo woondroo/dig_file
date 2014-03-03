@@ -1,1 +1,1 @@
-{"model":"LB"}
+{"model":"L"}

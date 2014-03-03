@@ -43,6 +43,9 @@ class IndexController extends BaseController
 			$aryBTCData = empty( $btcVal ) ? array() : json_decode( $btcVal , true );
 			$aryLTCData = empty( $ltcVal ) ? array() : json_decode( $ltcVal , true );
 
+			// get run model
+			$strRunModel = RunModel::model()->getRunModel();
+
 			// if commit save
 			if ( Nbt::app()->request->isPostRequest )
 			{
@@ -53,6 +56,13 @@ class IndexController extends BaseController
 				$strLTCAddress = isset( $_POST['address_ltc'] ) ? htmlspecialchars( $_POST['address_ltc'] ) : '';
 				$strLTCAccount = isset( $_POST['account_ltc'] ) ? htmlspecialchars( $_POST['account_ltc'] ) : '';
 				$strLTCPassword = isset( $_POST['password_ltc'] ) ? htmlspecialchars( $_POST['password_ltc'] ) : '';
+
+				$strGetRunModel = isset( $_POST['runmodel'] ) ? htmlspecialchars( $_POST['runmodel'] ) : '';
+				if ( !empty( $strGetRunModel ) && in_array( $strGetRunModel , array( 'L' , 'LB' ) ) )
+				{
+					RunModel::model()->storeRunModel( $strGetRunModel );
+					$strRunModel = $strGetRunModel;
+				}
 
 				$aryBTCData['ad'] = $strBTCAddress;
 				$aryBTCData['ac'] = $strBTCAccount;
@@ -81,6 +91,7 @@ class IndexController extends BaseController
 		$aryData['tip'] = $aryTipData;
 		$aryData['btc'] = $aryBTCData;
 		$aryData['ltc'] = $aryLTCData;
+		$aryData['runmodel'] = $strRunModel;
 		$this->render( 'index' , $aryData );
 	}
 
@@ -669,12 +680,12 @@ class IndexController extends BaseController
 			$speedData = array('BTC'=>array(),'LTC'=>array());
 		if ( empty( $countLog ) || empty( $countData ) )
 			$countData = array(
-					'BTC'=>array('A'=>0,'R'=>0,'T'=>time(),'LC'=>$now),
-					'LTC'=>array('A'=>0,'R'=>0,'T'=>time(),'LC'=>$now)
+					'BTC'=>array('A'=>0,'R'=>0,'T'=>$now,'LC'=>$now),
+					'LTC'=>array('A'=>0,'R'=>0,'T'=>$now,'LC'=>$now)
 					);
 
 		// every 30 second clear
-		if ( !empty( $speedData['lastlog'] ) && $now - $speedData['lastlog'] < 30 )
+		if ( !empty( $speedData['lastlog'] ) && $now - $speedData['lastlog'] < 30 && $now - $speedData['lastlog'] > -600 )
 			return false;
 		
 		$newData = array('BTC'=>array(),'LTC'=>array());
@@ -749,8 +760,8 @@ class IndexController extends BaseController
 			$countData['BTC']['LC'] = $now;
 
 		// is need restart
-		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) && ( $btc_need_check_time || $now - $countData['BTC']['LC'] > 600 ) )
-			if ( $now - $newData['BTC']['T'] > 600 )
+		if ( in_array( $strRunModel , array( 'B' , 'LB' ) ) && ( $btc_need_check_time || $now - $countData['BTC']['LC'] > 600 || $now - $countData['BTC']['LC'] < 0 ) )
+			if ( $now - $newData['BTC']['T'] > 600 || $now - $newData['BTC']['T'] < 0 )
 				$boolIsNeedRestart = true;
 
 		if ( file_exists( $ltc_log_dir ) )
@@ -804,18 +815,18 @@ class IndexController extends BaseController
 		if ( $ltc_need_check_time === true || empty( $countData['LTC']['LC'] ) )
 			$countData['LTC']['LC'] = $now;
 			
-		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) && ( $ltc_need_check_time || $now - $countData['LTC']['LC'] > 600 ) )
+		if ( in_array( $strRunModel , array( 'L' , 'LB' ) ) && ( $ltc_need_check_time || $now - $countData['LTC']['LC'] > 600 || $now - $countData['LTC']['LC'] < 0 ) )
 		{
 			foreach ( $newData['LTC'] as $m )
 			{
-				if ( $now - $m['T'] > 600 )
+				if ( $now - $m['T'] > 600 || $now - $m['T'] < 0 )
 				{
 					$boolIsNeedRestart = true;
 					break;
 				}
 			}
 			
-			if ( $boolIsNeedRestart === false && $now - $countData['LTC']['LC'] > 600 )
+			if ( $boolIsNeedRestart === false && ( $now - $countData['LTC']['LC'] > 600 || $now - $countData['LTC']['LC'] < 0 ) )
 				$boolIsNeedRestart = true;
 		}
 

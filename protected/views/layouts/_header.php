@@ -18,8 +18,8 @@
       </ul>
 	  <ul id="action-header" class="nav navbar-nav navbar-right">
 	    <li><a href="javascript:;" id="action-restart">立即重启</a></li>
-	    <li><a href="javascript:;" id="action-run">正常运行</a></li>
-	    <li><a href="javascript:;" id="action-super">超频运行</a></li>
+	    <?php/*<li><a href="javascript:;" id="action-run">正常运行</a></li>*/?>
+	    <li><a href="javascript:;" id="action-super">正在运行</a></li>
 	    <li><a href="javascript:;" id="action-stop">停止运行</a></li>
       </ul>
     </div>
