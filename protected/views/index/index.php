@@ -2,7 +2,7 @@
 	$aryStatus = array( 'success'=>'alert-success' , 'warning'=>'alert-warning' , 'error'=>'alert-danger' );
 	?>
 	<div class="page-header">
-		<h1>Setting! 设置中心</h1>
+		<h1>Setting! 设置中心<div class="pull-right"><h4>当前版本：<?php echo CUR_VERSION; ?></h4></div></h1>
 	</div>
 	<div class="alert alert-warning">
 		<strong>注意!</strong> 最佳设置是一个矿机对应一个矿工号！ <a target="_blank" href="<?php echo MAIN_DOMAIN; ?>/help#poolset">[为什么?]</a>&nbsp;&nbsp;&nbsp;多个矿工号请用 英文半角"," 隔开！

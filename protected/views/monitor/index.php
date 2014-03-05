@@ -1,5 +1,5 @@
   <div class="page-header">
-	<h1>SHA 运行状态</h1>
+	<h1>SHA 运行状态<div class="pull-right"><h4>当前版本：<?php echo CUR_VERSION; ?></h4></div></h1>
   </div>
   <div id="btc-machine-container" class="row"></div>
 
