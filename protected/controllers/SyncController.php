@@ -96,7 +96,7 @@ class SyncController extends BaseController
 		if ( !empty( $syncData['upgrade'] ) )
 		{
 			$strVersion = $syncData['upgrade'];
-			if ( !empty( $strVersion ) && $strVersion > CUR_VERSION )
+			if ( !empty( $strVersion ) )
 			{
 				// store upgrade status to running
 				$redis->writeByKey( 'upgrade.run.status' , json_encode( array('status'=>1,'time'=>time()) ) );

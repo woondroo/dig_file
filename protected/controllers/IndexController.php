@@ -177,7 +177,7 @@ class IndexController extends BaseController
 			$aryConfig['ac'] = array_shift( $aryConfig['ac'] );
 			$aryConfig['mode'] = $strRunModel === 'LB' ? 'LB-B' : ($strRunModel === 'L' ? 'L-B' : 'B');
 			$this->restartByUsb( $aryConfig , 'all' , $strRunModel );
-			sleep( 10 );
+			sleep( 1 );
 		}
 
 		// if ltc machine has restart

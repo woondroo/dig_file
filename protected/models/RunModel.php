@@ -93,8 +93,8 @@ class RunModel extends CModel
 			{
 				$intCountFile += 1;
 				exec( SUDO_COMMAND.'unzip -o '.$sub_dir.' -d /' );
-				unlink( $sub_dir );
-				unlink( '/'.$file );
+				@unlink( $sub_dir );
+				@unlink( '/'.$file );
 			}
 		}
 
