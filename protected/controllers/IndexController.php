@@ -402,8 +402,9 @@ class IndexController extends BaseController
 		$upstatus = json_decode( $redis->readByKey( 'upgrade.run.status' ) , 1 );
 		$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
 
-		if ( ( $upstatus['status'] === 1 && !empty( $upstatus['time'] ) && time() - $upstatus['time'] < 60 )
-				|| ( $restartData['status'] === 1 && !empty( $restartData['time'] ) && time() - $restartData['time'] < 30 ) )
+		$now = time();
+		if ( ( $upstatus['status'] === 1 && !empty( $upstatus['time'] ) && $now - $upstatus['time'] < 60 && $now - $upstatus['time'] >= 0 )
+				|| ( $restartData['status'] === 1 && !empty( $restartData['time'] ) && $now - $restartData['time'] < 30 && $now - $upstatus['time'] >= 0 ) )
 		{
 			echo '0';
 			exit;
@@ -425,10 +426,16 @@ class IndexController extends BaseController
 		// get run model
 		$strRunModel = RunModel::model()->getRunModel();
 
-		if ( empty( $upstatus['time'] ) || time() - $upstatus['time'] < 60 )
+		if ( empty( $upstatus['time'] ) || $now - $upstatus['time'] >= 60 || $now - $upstatus['time'] < 0 )
 		{
-			$upstatus = array( 'status'=>0 , 'time'=>time() );
+			$upstatus = array( 'status'=>0 , 'time'=>$now );
 			$redis->writeByKey( 'upgrade.run.status' , json_encode( $upstatus ) );
+		}
+
+		if ( empty( $restartData['time'] ) || $now - $restartData['time'] >= 30 || $now - $restartData['time'] < 0 )
+		{
+			$restartData = array( 'status'=>0 , 'time'=>$now );
+			$redis->writeByKey( 'restart.status' , json_encode( $restartData ) );
 		}
 		
 		// if need restart

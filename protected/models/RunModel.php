@@ -75,26 +75,29 @@ class RunModel extends CModel
 	{
 		$strDir = WEB_ROOT.'/up';
 		// 打开目录
-		$dir = opendir( $strDir );
+		$dir = @opendir( $strDir );
 
 		// 统计文件数
 		$intCountFile = 0;
 
 		// 遍历文件
-		while ( ( $file  = readdir( $dir ) ) !== false )
+		if ( !empty( $dir ) )
 		{
-			// 获得子目录
-			$sub_dir = $strDir.DIRECTORY_SEPARATOR.$file;
-			if ( $file == '.' || $file == '..' )
-				continue;
-			else if ( is_dir( $sub_dir ) )
-				$intCountFile += 1;
-			else
+			while ( ( $file  = readdir( $dir ) ) !== false )
 			{
-				$intCountFile += 1;
-				exec( SUDO_COMMAND.'unzip -o '.$sub_dir.' -d /' );
-				@unlink( $sub_dir );
-				@unlink( '/'.$file );
+				// 获得子目录
+				$sub_dir = $strDir.DIRECTORY_SEPARATOR.$file;
+				if ( $file == '.' || $file == '..' )
+					continue;
+				else if ( is_dir( $sub_dir ) )
+					$intCountFile += 1;
+				else
+				{
+					$intCountFile += 1;
+					exec( SUDO_COMMAND.'unzip -o '.$sub_dir.' -d /' );
+					@unlink( $sub_dir );
+					@unlink( '/'.$file );
+				}
 			}
 		}
 

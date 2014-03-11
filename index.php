@@ -1,4 +1,4 @@
-<?php
+<?php
 error_reporting(E_ALL ^ E_NOTICE);
 //check config.php
 if( !file_exists( dirname(__FILE__).'/protected/config/define.php' ) )
