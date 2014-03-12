@@ -295,8 +295,10 @@ var actionSuccess = {
 			$('#check-result-date-1 span').html( '异常' );
 		}
 
-		var cur = Date.parse(new Date());
-		cur = cur/1000;
+		var d = new Date();
+		cur = d.getTime()/1000;
+		offset = d.getTimezoneOffset() * 60;
+		cur = offset + cur + 8*3600;
 		if ( data.TIME > 0 && cur - data.TIME < 30 && cur - data.TIME > -30 )
 		{
 			$('#check-result-date-2 span').html( '正常' );

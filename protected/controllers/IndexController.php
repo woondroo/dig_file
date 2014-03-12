@@ -438,14 +438,17 @@ class IndexController extends BaseController
 			$redis->writeByKey( 'restart.status' , json_encode( $restartData ) );
 		}
 		
+		$intCountMachine = max( 
+				count( $aryData['alived']['BTC'] )+count( $aryData['died']['BTC'] ) , 
+				count( $aryData['alived']['LTC'] )+count( $aryData['died']['LTC'] ) );
+
 		// if need restart
-		if ( count( $aryData['alived']['LTC'] ) === 0 
-				&& count( $aryData['died']['LTC'] ) > 0 
-				&& $strRunModel === 'L' )
-			//echo $this->actionRestart( true ) === true ? 1 : -1;
-			echo 1;
+		if ( ( $strRunModel === 'LB' &&  $intCountMachine > 0 
+				&& ( count( $aryData['alived']['BTC'] ) === 0 || count( $aryData['alived']['LTC'] ) === 0 ) )
+				|| ( $strRunModel === 'L' && $intCountMachine > 0 && count( $aryData['alived']['LTC'] ) === 0 ) )
+			echo $this->actionRestart( true ) === true ? 1 : -1;
 		else
-			echo 1;
+			echo 2;
 		exit;
 	}
 
