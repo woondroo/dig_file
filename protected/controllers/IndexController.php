@@ -843,6 +843,21 @@ class IndexController extends BaseController
 		if ( empty( $speedData['lastlog'] ) )
 			$boolIsNeedRestart = false;
 
+		// check memory
+		$strMemoryCmd = 'free -m';
+		@exec( $strMemoryCmd , $memory_output );
+ 	
+		preg_match( '/Mem:\s+(\d+)/' , $memory_output[1] , $total_memory );
+		$intTotalMemory = $total_memory[1];
+
+		preg_match( '/(\d+)$/' , $memory_output[2] , $free_memory );
+		$intFreeMemory = $free_memory[1];
+
+		// if low memory
+		$floatFreeMemoryPercent = $intFreeMemory * 100.0 / $intTotalMemory;
+		if ( $floatFreeMemoryPercent < 11 )
+			$boolIsNeedRestart = true;
+
 		// store clear time stamp
 		$newData['lastlog'] = $now;
 
