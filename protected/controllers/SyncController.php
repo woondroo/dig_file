@@ -54,6 +54,25 @@ class SyncController extends BaseController
 		// get alived machine count
 		$intCountMachine = max( count( $checkState['alived']['BTC'] )+count( $checkState['died']['BTC'] ) , count( $checkState['alived']['LTC'] )+count( $checkState['died']['LTC'] ) );
 
+		// get max accept number
+		$intMaxNum = max( $countData['BTC']['A'] , $countData['BTC']['R'] , $countData['LTC']['A'] , $countData['LTC']['R'] );
+		if ( $intMaxNum > 0 )
+		{
+			$countData['last'] = time();
+			$countData['noar'] = 0;
+		}
+		else
+			$countData['noar'] += 1;
+
+		// if need reload conf
+		$boolIsReloadConf = false;
+		if ( !empty( $countData['last'] ) && time() - $countData['last'] > 1200 && $countData['noar'] >= 20 )
+		{
+			$boolIsReloadConf = true;
+			$countData['last'] = time();
+			$countData['noar'] = 0;
+		}
+
 		$arySyncData = array();
 		$arySyncData['key'] = md5($mac_addr->mac_addr.'-'.$strRKEY);
 		$arySyncData['time'] = time();
@@ -64,6 +83,8 @@ class SyncController extends BaseController
 		$arySyncData['data']['sync']['ve'] = CUR_VERSION;
 		$arySyncData['data']['sync']['md'] = $strRunModel;
 		$arySyncData['data']['sync']['ip'] = $ip_addr->ip_addr;
+		if ( $boolIsReloadConf === true )
+			$arySyncData['data']['sync']['reloadconf'] = 1;
 		$arySyncData['data'] = urlencode( base64_encode( json_encode( $arySyncData['data'] ) ) );
 
 		// sync data
@@ -137,6 +158,11 @@ class SyncController extends BaseController
 			// store data
 			$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
 			$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
+
+			// restore statistical
+			$countData['last'] = time();
+			$countData['noar'] = 0;
+			$redis->writeByKey( 'speed.count.log' , json_encode( $countData ) );
 		}
 
 		if ( !empty( $syncData['restart'] ) && $syncData['restart'] === 1 )

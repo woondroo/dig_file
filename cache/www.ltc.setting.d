@@ -1,1 +1,0 @@
-{"ad":"stratum+tcp:\/\/stratum.f2pool.com:8888","ac":"wengebin.001,wengebin.002,wengebin.003,wengebin.004,wengebin.005,wengebin.006,wengebin.007,wengebin.008,wengebin.009,wengebin.010,wengebin.011","pw":"123456","su":1}
