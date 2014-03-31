@@ -155,6 +155,8 @@ class PortController extends BaseController
 			exit;
 		}
 		
+		// is need reboot
+		$boolIsReboot = true;
 		if ( file_exists( $configFile ) )
 		{
 			$content = file_get_contents( $configFile );
@@ -202,13 +204,18 @@ class PortController extends BaseController
 			$os = DIRECTORY_SEPARATOR=='\\' ? "windows" : "linux";
 			$mac_addr = new CMac( $os );
 			$new_mac = $mac_addr->mac_addr;
+
+			$boolIsReboot = false;
 		}
 		
 		$macf = fopen( $checkFile , 'w' );
 		fwrite( $macf , $new_mac );
 		fclose( $macf );
 
-		exec(SUDO_COMMAND.'reboot');
+		// need reboot
+		if ( $boolIsReboot === true )
+			exec(SUDO_COMMAND.'reboot');
+
 		exit;
 	}
 

@@ -144,18 +144,21 @@ class CheckController extends BaseController
 	{
 		$aryReturn = array( 'TIME'=>0 , 'ZONE'=>0 );
 
+		// date command
+		$command = SUDO_COMMAND.'date -R';
+		exec( $command , $output );
+
 		// get current time
 		$cur = time();
 		$aryReturn['TIME'] = $cur;
 
-		// get zone config data
-		if ( file_exists( '/etc/config/system' ) )
+		// check
+		if ( !empty( $output ) && count( $output ) > 0 ) 
 		{
-			$strConfig = file_get_contents( '/etc/config/system' );
 			// match timezone
-			preg_match( '/.*Asia\/Shanghai.*/' , $strConfig , $match_zone );
+			preg_match( '/\+0800/' , $output[0] , $match_zone );
 
-			if ( !empty( $match_zone[0] ) )
+			if ( !empty( $match_zone[0] ) ) 
 			{
 				$aryReturn['ZONE'] = 1;
 			}
