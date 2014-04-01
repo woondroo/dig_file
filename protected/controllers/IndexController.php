@@ -67,12 +67,12 @@ class IndexController extends BaseController
 				$aryBTCData['ad'] = $strBTCAddress;
 				$aryBTCData['ac'] = $strBTCAccount;
 				$aryBTCData['pw'] = $strBTCPassword;
-				$aryBTCData['su'] = isset( $aryBTCData['su'] ) ? $aryBTCData['su'] : 0;
+				$aryBTCData['su'] = isset( $aryBTCData['su'] ) ? $aryBTCData['su'] : 1;
 
 				$aryLTCData['ad'] = $strLTCAddress;
 				$aryLTCData['ac'] = $strLTCAccount;
 				$aryLTCData['pw'] = $strLTCPassword;
-				$aryLTCData['su'] = isset( $aryLTCData['su'] ) ? $aryLTCData['su'] : 0;
+				$aryLTCData['su'] = isset( $aryLTCData['su'] ) ? $aryLTCData['su'] : 1;
 
 				// store data
 				$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
@@ -135,6 +135,10 @@ class IndexController extends BaseController
 	{
 		ini_set( "max_execution_time" , "300" );
 
+		// get system
+		$sys = new CSys();
+
+		// init cache
 		$redis = $this->getRedis();
 		$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
 
@@ -163,13 +167,18 @@ class IndexController extends BaseController
 		$this->actionShutdown( true );
 
 		// restart power
-		CPowerSystem::restartPower( 1000000 );
+		if ( $sys->cursys == 'OPENWRT' )
+			CPowerSystem::restartPower( 1000000 );
 
-		$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel );
+		if ( $sys->cursys == 'OPENWRT' )
+			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel );
+		else if ( $sys->cursys == 'RASPBERRY' )
+			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel , 0 );
+
 		$aryUsb = $aryUsbCache['usb'];
 
 		// if btc machine has restart
-		if ( count( $aryUsb ) > 0 )
+		if ( count( $aryUsb ) > 0 && in_array( $strRunModel , array( 'B' , 'LB' ) ) )
 		{
 			$aryBTCData = $this->getTarConfig( 'btc' );
 
@@ -213,9 +222,9 @@ class IndexController extends BaseController
 	/**
 	 * restart program by usb
 	 */
-	public function restartByUsb( $_aryConfig = array() , $_aryUsb = '' , $_strUsbModel = '' , $_strSingleShutDown = '' )
+	public function restartByUsb( $_aryConfig = array() , $_strUsb = '' , $_strUsbModel = '' , $_strSingleShutDown = '' )
 	{
-		if ( empty( $_aryConfig ) || empty( $_aryUsb ) || empty( $_strUsbModel ) )
+		if ( empty( $_aryConfig ) || empty( $_strUsb ) || empty( $_strUsbModel ) )
 			return false;
 
 		$aryData = $_aryConfig;
@@ -228,7 +237,7 @@ class IndexController extends BaseController
 		$intRunLevel = $aryData['mode'] === 'LB-B' ? '11' : ($aryData['mode'] === 'L-B' ? '0' : '16');
 
 		// get btc start command
-		if ( in_array( $aryData['mode'] , array( 'LB-B' , 'L-B' , 'B' ) ) )
+		if ( in_array( $aryData['mode'] , array( 'LB-B' , 'B' ) ) )
 		{
 			$aryUsbCache = json_decode( $this->getRedis()->readByKey( 'usb.check.result' ) , 1 );
 			$intRunSpeed = $aryUsbCache['hasgd'] === 0 ? 800 : 700;
@@ -240,9 +249,12 @@ class IndexController extends BaseController
 
 			$command = SUDO_COMMAND.WEB_ROOT."/soft/cgminer --dif --gridseed-options=baud=115200,freq={$intRunSpeed},chips=5,modules=1,usefifo=0,btc={$intRunLevel} --hotplug=0 -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} {$startUsb} >/dev/null 2>&1 &";
 		}
-		// get ltc start command
-		else if ( in_array( $startModel , array( 'L' , 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-L' , 'L' ) ) )
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} --dif={$_aryUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} --dual >/dev/null 2>&1 &";
+		// get dule mode ltc start command
+		else if ( in_array( $startModel , array( 'LB' ) ) && in_array( $aryData['mode'] , array( 'LB-L' ) ) )
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} --dif={$_strUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} --dual >/dev/null 2>&1 &";
+		// get single mode ltc start command
+		else if ( in_array( $startModel , array( 'L' ) ) && in_array( $aryData['mode'] , array( 'L' ) ) )
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} -G {$_strUsb} --dif={$_strUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} >/dev/null 2>&1 &";
 
 		exec( $command );
 		return true;
@@ -499,7 +511,7 @@ class IndexController extends BaseController
 			foreach ( $grepout as $r )
 			{
 				preg_match( '/.*-G\s(.+?)\s--.*/' , $r , $match_usb );
-				if ( !empty( $match_usb[1] ) )
+				if ( !empty( $match_usb[1] ) && !in_array( $match_usb[1] , $alivedProcess ) )
 					$alivedProcess[] = $match_usb[1];
 			}
 

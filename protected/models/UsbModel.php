@@ -37,7 +37,7 @@ class UsbModel extends CModel
 		if ( empty( $_strRunModel ) )
 			return array();
 
-		if ( empty( $_strCheckTar ) || $_strCheckTar === 'lsusb' )
+		if ( ( in_array( $_strRunModel , array( 'B' , 'LB' ) ) && empty( $_strCheckTar ) ) || $_strCheckTar === 'lsusb' )
 		{
 			$redis = $this->getRedis();
 			$aryUsbCache = json_decode( $redis->readByKey( 'usb.check.result' ) , 1 );
@@ -92,7 +92,7 @@ class UsbModel extends CModel
 		}
 		else if ( empty( $_strCheckTar ) || $_strCheckTar === 'tty' )
 		{
-			@exec( SUDO_COMMAND.'ls /dev/*USB*' , $output );
+			@exec( SUDO_COMMAND.'ls /dev/*ACM*' , $output );
 
 			$aryUsbCache = array();
 			$aryUsbCache['usb'] = $output;

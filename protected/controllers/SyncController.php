@@ -34,6 +34,9 @@ class SyncController extends BaseController
 		$mac_addr = new CMac( $os );
 		$ip_addr = new CIp( $os );
 
+		// get system
+		$sys = new CSys();
+
 		$strRKEY = '';
 		if ( file_exists( WEB_ROOT.'/js/RKEY.TXT' ) )
 		{
@@ -83,6 +86,7 @@ class SyncController extends BaseController
 		$arySyncData['data']['sync']['ve'] = CUR_VERSION;
 		$arySyncData['data']['sync']['md'] = $strRunModel;
 		$arySyncData['data']['sync']['ip'] = $ip_addr->ip_addr;
+		$arySyncData['data']['sync']['sys'] = $sys->cursys;
 		if ( $boolIsReloadConf === true )
 			$arySyncData['data']['sync']['reloadconf'] = 1;
 		$arySyncData['data'] = urlencode( base64_encode( json_encode( $arySyncData['data'] ) ) );
