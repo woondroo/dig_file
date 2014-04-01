@@ -138,7 +138,6 @@ class IndexController extends BaseController
 		// get system
 		$sys = new CSys();
 
-		// init cache
 		$redis = $this->getRedis();
 		$restartData = json_decode( $redis->readByKey( 'restart.status' ) , 1 );
 
@@ -170,10 +169,13 @@ class IndexController extends BaseController
 		if ( $sys->cursys == 'OPENWRT' )
 			CPowerSystem::restartPower( 1000000 );
 
+		// single model or dule model
+		$strCheckTar = $strRunModel == 'L' ? 'tty' : '';
+
 		if ( $sys->cursys == 'OPENWRT' )
-			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel );
+			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel , 6, $strCheckTar );
 		else if ( $sys->cursys == 'RASPBERRY' )
-			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel , 0 );
+			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel , 0, $strCheckTar );
 
 		$aryUsb = $aryUsbCache['usb'];
 
@@ -203,6 +205,7 @@ class IndexController extends BaseController
 
 				$aryConfig['ac'] = $aryLTCData['ac'][$aryLTCData['acc']-$intUids];
 				$aryConfig['mode'] = $strRunModel === 'LB' ? 'LB-L' : 'L';
+				$aryConfig['su'] = $aryLTCData['su'];
 
 				$this->restartByUsb( $aryConfig , $usb , $strRunModel );
 				$intUids --;
@@ -254,7 +257,10 @@ class IndexController extends BaseController
 			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} --dif={$_strUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} --dual >/dev/null 2>&1 &";
 		// get single mode ltc start command
 		else if ( in_array( $startModel , array( 'L' ) ) && in_array( $aryData['mode'] , array( 'L' ) ) )
-			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} -G {$_strUsb} --dif={$_strUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} >/dev/null 2>&1 &";
+		{
+			$intRunSpeed = $aryData['su'] == 1 ? 850 : 600;
+			$command = SUDO_COMMAND.WEB_ROOT."/soft/minerd{$modelLParam} -G {$_strUsb} --freq={$intRunSpeed} --dif={$_strUsb} -o {$aryData['ad']} -u {$aryData['ac']} -p {$aryData['pw']} >/dev/null 2>&1 &";
+		}
 
 		exec( $command );
 		return true;
@@ -314,7 +320,8 @@ class IndexController extends BaseController
 		$alivedLTCUsb = array();
 
 		// get usb machine and run model
-		$aryUsb = UsbModel::model()->getUsbCheckResult( $strRunModel );
+		$strCheckTar = $strRunModel == 'L' ? 'tty' : '';
+		$aryUsb = UsbModel::model()->getUsbCheckResult( $strRunModel , $strCheckTar );
 		$allUsbCache = $aryUsb['usb'];
 
 		$alivedBTC = false;
@@ -500,7 +507,8 @@ class IndexController extends BaseController
 		else if ( $strRunModel === 'L' )
 		{
 			// find new usb machine
-			$aryUsbCache = UsbModel::model()->getUsbCheckResult( $strRunModel );
+			$strCheckTar = $strRunModel == 'L' ? 'tty' : '';
+			$aryUsbCache = UsbModel::model()->getUsbCheckResult( $strRunModel , $strCheckTar );
 			$aryUsb = $aryUsbCache['usb'];
 
 			// get running programe
@@ -686,7 +694,8 @@ class IndexController extends BaseController
 	public function clearLog()
 	{
 		$strRunModel = RunModel::model()->getRunModel();
-		$aryUsbCache = UsbModel::model()->getUsbCheckResult( $strRunModel );
+		$strCheckTar = $strRunModel == 'L' ? 'tty' : '';
+		$aryUsbCache = UsbModel::model()->getUsbCheckResult( $strRunModel , $strCheckTar );
 		$aryUsb = $aryUsbCache['usb'];
 
 		$redis = $this->getRedis();

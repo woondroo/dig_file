@@ -37,6 +37,9 @@ class UsbModel extends CModel
 		if ( empty( $_strRunModel ) )
 			return array();
 
+		// is contain GD miner
+		$boolHasGD = false;
+
 		if ( ( in_array( $_strRunModel , array( 'B' , 'LB' ) ) && empty( $_strCheckTar ) ) || $_strCheckTar === 'lsusb' )
 		{
 			$redis = $this->getRedis();
@@ -61,7 +64,6 @@ class UsbModel extends CModel
 				@exec( SUDO_COMMAND.'lsusb' , $output );
 
 				$aryUsb = array();
-				$boolHasGD = false;
 				foreach ( $output as $usb )
 				{
 					preg_match( '/.*Bus\s(\d+)\sDevice\s(\d+).*CP210x.*/' , $usb , $match_usb );
@@ -97,6 +99,7 @@ class UsbModel extends CModel
 			$aryUsbCache = array();
 			$aryUsbCache['usb'] = $output;
 			$aryUsbCache['time'] = time();
+			$aryUsbCache['hasgd'] = 0;
 
 			return $aryUsbCache;
 		}
