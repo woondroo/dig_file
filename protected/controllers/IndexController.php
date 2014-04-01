@@ -175,7 +175,7 @@ class IndexController extends BaseController
 		if ( $sys->cursys == 'OPENWRT' )
 			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel , 6, $strCheckTar );
 		else if ( $sys->cursys == 'RASPBERRY' )
-			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel , 0, $strCheckTar );
+			$aryUsbCache = UsbModel::model()->getUsbChanging( $strRunModel , 0.1, $strCheckTar );
 
 		$aryUsb = $aryUsbCache['usb'];
 
