@@ -10,61 +10,6 @@ class CUtil
 	/**性别-女*/
 	const SEX_WOMEN = 2;
 	
-	/**老师帐户状态-禁用-*/
-	const TEACHER_ACCOUNT_STATUS_DISABLED = 0;
-	/**老师帐户状态-启用-*/
-	const TEACHER_ACCOUNT_STATUS_ENABLED = 1;
-
-	/**老师帐户状态-未删除-*/
-	const TEACHER_DELETE_STATUS_USEABLE = 0;
-	/**老师帐户状态-已删除-*/
-	const TEACHER_DELETE_STATUS_DELETED = 1;
-	
-	/**教程状态-录制中*/
-	const TUTORIALS_STATUS_RECORDING = 0;
-	/**教程状态-已完成*/
-	const TUTORIALS_STATUS_COMPLETED = 1;
-
-	/**教程发布状态-未发布*/
-	const TUTORIALS_STATUS_UNPUBLISH = 0;
-	/**教程发布状态-已发布*/
-	const TUTORIALS_STATUS_PUBLISHED = 1;
-
-	/**章节同步状态-未同步*/
-	const TUTORIALS_CHAPTER_SYNC_NO = 0;
-	/**章节同步状态-已同步*/
-	const TUTORIALS_CHAPTER_SYNC_YES = 1;
-	
-	/**教程章节状态-不通过**/
-	const TUTORIALS_CHAPTER_STATUS_NO = -1;
-	/**教程章节状态-未提交审核**/
-	const TUTORIALS_CHAPTER_STATUS_INIT = 0;
-	/**教程章节状态-待审核**/
-	const TUTORIALS_CHAPTER_STATUS_SUBMIT = 1;
-	/**教程章节状态-审核通过**/
-	const TUTORIALS_CHAPTER_STATUS_YES = 2;
-	
-	/**上传方式-WEB上传*/
-	const UPLOAD_WAY_WEB = 0;
-	/**上传方式-FTP上传*/
-	const UPLOAD_WAY_FTP = 1;
-
-	/**教程类别-初级*/
-	const TUTORIALS_LEVL_ONE = 1;
-	/**教程类别-中级*/
-	const TUTORIALS_LEVL_TWO = 2;	
-	/**教程类别-高级*/
-	const TUTORIALS_LEVL_THREE = 3;	
-	/**教程类别-超高级*/
-	const TUTORIALS_LEVL_FOUR = 4;
-	
-	/**网站会员状态-冻结*/
-	const USER_ACCOUNT_STATUS_DISABLED = 0;
-	/**网站会员状态-正常*/
-	const USER_ACCOUNT_STATUS_ENABLED = 1;
-	
-	
-	
 	/**
 	 * 性别
 	 *
@@ -78,144 +23,6 @@ class CUtil
 			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
 	}
 	
-	/**
-	 * 获取教师等级
-	 *
-	 * @param int $_intV
-	 */
-	public static function getTeacherLevel( $_intV = 999 )
-	{
-		$aryData = array( 1=>'A' , 2=>'B' , 3=>'C' ,4=>'D');
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-
-	/**
-	 * 教程状态图标
-	 */
-	public static function getTutorialStateClass( $_intV = 9999 )
-	{
-		$aryData = array( self::TUTORIALS_STATUS_RECORDING=>'table_arr05' , 
-				self::TEACHER_ACCOUNT_STATUS_ENABLED=>'table_arr03' );
-
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-
-	/**
-	 * 章节状态图标
-	 */
-	public static function getTutorialChapterStateClass( $_intV = 9999 )
-	{
-		$aryData = array( self::TUTORIALS_CHAPTER_STATUS_INIT=>'table_arr06' , 
-				self::TUTORIALS_CHAPTER_STATUS_SUBMIT=>'table_arr07' , 
-				self::TUTORIALS_CHAPTER_STATUS_YES=>'table_arr08' , 
-				self::TUTORIALS_CHAPTER_STATUS_NO=>'table_arr09' );
-
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-	
-	/**
-	 * 老师帐户状态
-	 *
-	 */
-	public static function getTeacherAccountStatus( $_intV = 999 )
-	{
-		$aryData = array( self::TEACHER_ACCOUNT_STATUS_DISABLED=>'禁用' , self::TUTORIALS_STATUS_COMPLETED =>'启用' );
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-	
-	/**
-	 * 教程状态
-	 *
-	 */
-	public static function getTutorialsStatus( $_intV = 9999 )
-	{
-		$aryData = array( self::TUTORIALS_STATUS_RECORDING=>'录制中' , self::TUTORIALS_STATUS_COMPLETED =>'已完成' );
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-	
-	
-	/**
-	 * 教程章节状态
-	 *
-	 */
-	public static function getTutorialsChapterStatus( $_intV = 9999 )
-	{
-		$aryData = array( 
-							self::TUTORIALS_CHAPTER_STATUS_NO=>'不通过' ,
-							self::TUTORIALS_CHAPTER_STATUS_INIT =>'未提交审核' ,
-							self::TUTORIALS_CHAPTER_STATUS_SUBMIT =>'待审核' ,
-							self::TUTORIALS_CHAPTER_STATUS_YES =>'通过' 
-					);
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-	/**
-	 * @author  zhaojingyun
-	 * 查询的教程级别
-	 * @return array()
-	 */
-	public static function getTurorialsLevel( $_intV = 9999 )
-	{
-		$aryData = array( 
-							self::TUTORIALS_LEVL_ONE =>'初级' ,
-							self::TUTORIALS_LEVL_TWO =>'中级' ,
-							self::TUTORIALS_LEVL_THREE =>'高级' ,
-							self::TUTORIALS_LEVL_FOUR =>'超高级' 
-					);
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-	
-	/**
-	 * 获取教程服务类型
-	 *
-	 * @param int $_intV	教程ID
-	 * @return array|string
-	 */
-	public function getTutorialServices( $_intV = 9999 )
-	{
-		$aryData = array( 
-							self::TUTORIALS_SERVICES_LIFELONG =>'终身有效订单' ,
-							self::TUTORIALS_SERVICES_YEAR =>'包年订单' ,
-							self::TUTORIALS_SERVICES_MONTH =>'包月订单' ,
-							self::TUTORIALS_SERVICES_QUARTERLY =>'包季度订单' ,
-					);
-		if( is_null( $_intV ) )
-			return $aryData;
-		else
-			return isset( $aryData[$_intV] ) ? $aryData[$_intV] : '-';
-	}
-	
-	/**
-	 * 循环并创建目录
-	 */
-	public static function createDir( $path )
-	{
-		if (!file_exists($path)) {
-			self::createDir( dirname($path) );
-			@mkdir($path, 0755);
-		}
-	}
-
 	/**
 	 * 时间戳过期检查
 	 *
@@ -399,5 +206,22 @@ class CUtil
 
 		return $str;
 	}
+
+	/**
+	 * 配置是否为空
+	 *
+	 * @param array $_aryParams 配置
+	 * @return bool
+	 */
+	public static function isParamsEmpty( $_aryParams = array() )
+	{
+		if ( empty( $_aryParams['ad'] ) 
+				|| empty( $_aryParams['ac'] )
+				|| empty( $_aryParams['pw'] ) )
+			return false;
+
+		return true;
+	}
+
 //end class
 }

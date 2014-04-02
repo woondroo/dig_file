@@ -159,24 +159,25 @@ class SyncController extends BaseController
 			$aryLTCData['pw'] = $aryConfig['password_ltc'];
 			$aryLTCData['su'] = isset( $aryConfig['super_ltc'] ) ? $aryConfig['super_ltc'] : 1;
 
-			// store data
-			$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
-			$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
+			// is params empty
+			$boolCheck = CUtil::isParamsEmpty( $aryLTCData );
+			if ( $boolCheck === true )
+			{
+				// store data
+				$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
+				$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
 
-			// restore statistical
-			$countData['last'] = time();
-			$countData['noar'] = 0;
-			$redis->writeByKey( 'speed.count.log' , json_encode( $countData ) );
+				// restore statistical
+				$countData['last'] = time();
+				$countData['noar'] = 0;
+				$redis->writeByKey( 'speed.count.log' , json_encode( $countData ) );
+			}
 		}
 
 		if ( !empty( $syncData['restart'] ) && $syncData['restart'] === 1 )
-		{
 			$indexController->actionRestart();
-		}
 		else if ( $boolIsRestart === true )
-		{
 			$indexController->actionRestart();
-		}
 
 		echo '200';
 		exit();

@@ -74,6 +74,10 @@ class IndexController extends BaseController
 				$aryLTCData['pw'] = $strLTCPassword;
 				$aryLTCData['su'] = isset( $aryLTCData['su'] ) ? $aryLTCData['su'] : 1;
 
+				$boolCheck = CUtil::isParamsEmpty( $aryLTCData );
+				if ( $boolCheck === false )
+					throw new CModelException( 'SCRYPT配置不能有空数据！' );
+
 				// store data
 				$redis->writeByKey( 'btc.setting' , json_encode( $aryBTCData ) );
 				$redis->writeByKey( 'ltc.setting' , json_encode( $aryLTCData ) );
@@ -82,9 +86,10 @@ class IndexController extends BaseController
 				$aryTipData['status'] = 'success';
 				$aryTipData['text'] = '保存成功!';
 			}
-		} catch ( Exception $e ) {
+
+		} catch ( Exception $e ) { 
 			$aryTipData['status'] = 'error';
-			$aryTipData['text'] = '保存失败!';
+			$aryTipData['text'] = $e->getMessage();
 		}
 
 		$aryData = array();
@@ -348,7 +353,7 @@ class IndexController extends BaseController
 				continue;
 
 			// Match all usb machine
-			preg_match( '/.*\s--dif=(.+?)\s.*/' , $r , $match_usb );
+			preg_match( '/.*\s-G\s(.+?)\s.*/' , $r , $match_usb );
 
 			// If LTC model only, and usb cannot use
 			if ( !empty( $match_usb[1] ) && !in_array( $match_usb[1] , $allUsbCache ) )
